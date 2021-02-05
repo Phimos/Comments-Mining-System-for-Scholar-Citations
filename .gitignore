@@ -132,3 +132,6 @@ dmypy.json
 *.csv
 *.pdf
 result/
+
+# MacOS
+**/.DS_Store
