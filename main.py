@@ -1,5 +1,5 @@
 from crawlers import *
-from utils.markdown_writer import CitingPublication
+from utils.markdown_writer import CitingDocument, CitingPublication
 from typing import Optional, List
 from crawlers.freeproxy.freeproxy import FreeProxyPool
 import logging
@@ -14,7 +14,7 @@ class PaperCollecter(object):
         year_low: Optional[int] = 2020,
         year_high: Optional[int] = 2020,
         result_dir: str = "./result",
-        http_proxy: Optional[str] = "http://127.0.0.1:9999",
+        http_proxy: Optional[str] = "http://103.66.176.45:32251",
     ) -> None:
         super().__init__()
         if not os.path.exists(result_dir):
@@ -26,6 +26,7 @@ class PaperCollecter(object):
         self.year_high = year_high
         self.scholar_crawler = scholarly
         self.scihub_crawler = SciHub()
+        self.scihub_crawler.set_proxy(http_proxy)
 
     def collect(self):
         pass
@@ -51,10 +52,19 @@ class PaperCollecter(object):
         save_dir = os.path.join(self.result_dir, author, publication["bib"]["title"])
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
+
+        cd = CitingDocument(publication, document_path=os.path.join(save_dir, "summary.md"))
         for i, val in enumerate(self.scholar_crawler.citedby(publication)):
-            scholarly.pprint(val)
-            # with open("test.md", "w") as f:
-            #    f.write(CitingPublication(publication=scholarly.fill(val)).stream)
+            pub = self.scholar_crawler.fill(val)
+            pub['pub_url'] = self._download_pdf(pub, save_dir)
+            cd.add_publication(pub)
+            scholarly.pprint(pub)
+            break
+        cd.save()
+
+    def _download_pdf(self, publication: Publication, save_dir: str):
+        self.scihub_crawler.download(publication['pub_url'], save_dir, publication['bib']['title']+".pdf")
+        return os.path.join(save_dir, publication['bib']['title']+".pdf")
 
     def _collect_citation_info():
         pass

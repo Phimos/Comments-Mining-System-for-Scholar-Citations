@@ -139,7 +139,8 @@ class SciHub(object):
             self._save(
                 data["pdf"], os.path.join(destination, path if path else data["name"])
             )
-
+        else:
+            print(data)
         return data
 
     def fetch(self, identifier):

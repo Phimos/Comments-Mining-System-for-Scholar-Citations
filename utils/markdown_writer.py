@@ -1,5 +1,6 @@
 from typing import List, Union, Optional
-from ..crawlers import Author, Publication
+from .data_types import Publication
+import os
 
 
 class Markdown(object):
@@ -155,12 +156,14 @@ class CitingPublication(Markdown):
             self.author = publication["bib"]["author"]
             self.journal = publication["bib"]["journal"]
             self.abstract = publication["bib"]["abstract"]
+            self.pdf_link = publication['pub_url']
         else:
             self.title = title
             self.author = author
             self.journal = journal
             self.abstract = abstract
-        self.pdf_link = pdf_link
+            self.pdf_link = pdf_link
+        
 
     @property
     def stream(self):
@@ -168,7 +171,7 @@ class CitingPublication(Markdown):
             [
                 Header(
                     Hyperlink(self.title, self.pdf_link)
-                    if self.pdf_link is not None
+                    if self.pdf_link is not None and os.path.exists(self.pdf_link)
                     else PlainText(self.title)
                 ),
                 SingleLineBreak(),

@@ -48,7 +48,7 @@ class ProxyGenerator(object):
         self.logger = logging.getLogger("scholarly")
 
         # self._proxy_gen = None
-        self._proxy_gen = FreeProxyPool(refresh=True, download=True)
+        self._proxy_gen = FreeProxyPool(refresh=False, download=False)
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
         self._use_luminati = False
