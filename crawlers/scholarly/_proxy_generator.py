@@ -71,7 +71,7 @@ class ProxyGenerator(object):
         return self._session
 
     def Luminati(self, usr, passwd, proxy_port):
-        """ Setups a luminati proxy without refreshing capabilities.
+        """Setups a luminati proxy without refreshing capabilities.
 
         :param usr: scholarly username, optional by default None
         :type usr: string
@@ -79,7 +79,7 @@ class ProxyGenerator(object):
         :type passwd: string
         :param proxy_port: port for the proxy,optional by default None
         :type proxy_port: integer
-        
+
         :Example::
             pg = ProxyGenerator()
             pg.Luminati(usr = foo, passwd = bar, port = 1200)
@@ -102,7 +102,7 @@ class ProxyGenerator(object):
         Use proxy of your choice
         :param http: http proxy address
         type http: string
-        :param https: https proxy adress 
+        :param https: https proxy adress
         :type https: string
 
         :Example::
@@ -189,7 +189,7 @@ class ProxyGenerator(object):
         :type tor_control_port: int
         :param tor_password: the password for the Tor control server
         :type tor_password: str
-    
+
         :Example::
             pg = ProxyGenerator()
             pg.Tor_External(tor_sock_port = 9050, tor_control_port = 9051, tor_password = "scholarly_password")
@@ -225,7 +225,7 @@ class ProxyGenerator(object):
 
         :param tor_cmd: tor executable location (absolute path if its not exported in PATH)
         :type tor_cmd: string
-        :param tor_sock_port: tor socket port 
+        :param tor_sock_port: tor socket port
         :type tor_sock_port: int
         :param tor_control_port: tor control port
         :type tor_control_port: int
@@ -455,4 +455,3 @@ class ProxyGenerator(object):
             self._new_session()
 
         return self._session, new_timeout
-

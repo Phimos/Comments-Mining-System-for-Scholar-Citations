@@ -14,7 +14,7 @@ class PaperCollecter(object):
         year_low: Optional[int] = 2020,
         year_high: Optional[int] = 2020,
         result_dir: str = "./result",
-        http_proxy: Optional[str] = "http://103.66.176.45:32251",
+        http_proxy: Optional[str] = "http://36.90.37.60:8080",
     ) -> None:
         super().__init__()
         if not os.path.exists(result_dir):
@@ -53,18 +53,25 @@ class PaperCollecter(object):
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
 
-        cd = CitingDocument(publication, document_path=os.path.join(save_dir, "summary.md"))
+        cd = CitingDocument(
+            publication, document_path=os.path.join(save_dir, "summary.md")
+        )
+        cnt = 0
         for i, val in enumerate(self.scholar_crawler.citedby(publication)):
             pub = self.scholar_crawler.fill(val)
-            pub['pub_url'] = self._download_pdf(pub, save_dir)
+            pub["pub_url"] = self._download_pdf(pub, save_dir)
             cd.add_publication(pub)
             scholarly.pprint(pub)
-            break
+            cnt = cnt + 1
+            if cnt > 15:
+                break
         cd.save()
 
     def _download_pdf(self, publication: Publication, save_dir: str):
-        self.scihub_crawler.download(publication['pub_url'], save_dir, publication['bib']['title']+".pdf")
-        return os.path.join(save_dir, publication['bib']['title']+".pdf")
+        self.scihub_crawler.download(
+            publication["pub_url"], save_dir, publication["bib"]["title"] + ".pdf"
+        )
+        return os.path.join(save_dir, publication["bib"]["title"] + ".pdf")
 
     def _collect_citation_info():
         pass
@@ -92,4 +99,3 @@ for pub in publications:
 
 pc = PaperCollecter()
 pc.collect_by_author("Zhouchen Lin")
-

@@ -154,16 +154,28 @@ class CitingPublication(Markdown):
         if publication is not None:
             self.title = publication["bib"]["title"]
             self.author = publication["bib"]["author"]
-            self.journal = publication["bib"]["journal"]
+            # todo
+            # different tag for booktitle and journal
+            if "journal" in publication["bib"].keys():
+                self.journal = publication["bib"]["journal"]
+            elif "booktitle" in publication["bib"].keys():
+                self.journal = publication["bib"]["booktitle"]
+            else:
+                self.journal = ""
             self.abstract = publication["bib"]["abstract"]
-            self.pdf_link = publication['pub_url']
+
+            self.pdf_link = publication["pub_url"]
+
+            # todo
+            # define real pdf link and update path
+            # if self.pdf_link is real pdf link:
+            #     self.pdf_link = os.path.abspath(self.pdf_link).replace(" ", "%20")
         else:
             self.title = title
             self.author = author
             self.journal = journal
             self.abstract = abstract
             self.pdf_link = pdf_link
-        
 
     @property
     def stream(self):
@@ -208,7 +220,7 @@ class CitingDocument(Markdown):
     def stream(self):
         return Sequence(
             [
-                Header(self.cited_publication["bib"]["title"]),
+                Header(self.cited_publication["bib"]["title"], level=1),
                 DoubleLineBreak(),
                 *[CitingPublication(publication=pub) for pub in self.publications],
             ]

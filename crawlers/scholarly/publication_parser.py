@@ -116,8 +116,7 @@ class PublicationParser(object):
         return publication
 
     def get_publication(self, __data, pubtype: PublicationSource) -> Publication:
-        """Returns a publication that has either 'citation' or 'scholar' source
-        """
+        """Returns a publication that has either 'citation' or 'scholar' source"""
 
         publication: Publication = {"container_type": "Publication"}
         publication["source"] = pubtype
@@ -261,7 +260,7 @@ class PublicationParser(object):
 
     def fill(self, publication: Publication) -> Publication:
         """Populate the Publication with information from its profile
-        
+
         :param publication: Scholar or Citation publication container object that is not filled
         :type publication: PublicationCitation or PublicationScholar
         """
@@ -367,7 +366,14 @@ class PublicationParser(object):
             publication["filled"] = True
         return publication
 
-    def citedby(self, publication: Publication) -> _SearchScholarIterator or list:
+    def citedby(
+        self,
+        publication: Publication,
+        patents: bool = False,
+        citations: bool = False,
+        year_low: int = 2020,
+        year_high: int = 2020,
+    ) -> _SearchScholarIterator or list:
         """Searches Google Scholar for other articles that cite this Publication and
         returns a Publication generator.
 
@@ -379,7 +385,15 @@ class PublicationParser(object):
         """
         if not publication["filled"]:
             publication = self.fill(publication)
-        return _SearchScholarIterator(self.nav, publication["citedby_url"])
+
+        yr_lo = "&as_ylo={0}".format(year_low) if year_low is not None else ""
+        yr_hi = "&as_yhi={0}".format(year_high) if year_high is not None else ""
+        citations = "&as_vis={0}".format(1 - int(citations))
+        patents = "&as_sdt={0},5".format(1 - int(patents))
+
+        url = publication["citedby_url"] + yr_lo + yr_hi + citations + patents
+
+        return _SearchScholarIterator(self.nav, url)
 
     def bibtex(self, publication: Publication) -> str:
         """Returns the publication as a Bibtex entry
@@ -410,4 +424,3 @@ class PublicationParser(object):
             if link.string.lower() == "bibtex":
                 return link.get("href")
         return ""
-
