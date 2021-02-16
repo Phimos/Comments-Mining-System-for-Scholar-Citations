@@ -141,41 +141,27 @@ class Sequence(Markdown):
 
 
 class CitingPublication(Markdown):
-    def __init__(
-        self,
-        title: Optional[str] = None,
-        author: Optional[str] = None,
-        journal: Optional[str] = None,
-        abstract: Optional[str] = None,
-        publication: Optional[Publication] = None,
-        pdf_link: Optional[str] = None,
-    ) -> None:
+    def __init__(self, publication: Publication) -> None:
         super().__init__()
-        if publication is not None:
-            self.title = publication["bib"]["title"]
-            self.author = publication["bib"]["author"]
-            # todo
-            # different tag for booktitle and journal
-            if "journal" in publication["bib"].keys():
-                self.journal = publication["bib"]["journal"]
-            elif "booktitle" in publication["bib"].keys():
-                self.journal = publication["bib"]["booktitle"]
-            else:
-                self.journal = ""
-            self.abstract = publication["bib"]["abstract"]
+        self.title = publication["bib"]["title"]
+        self.author = publication["bib"]["author"]
 
-            self.pdf_link = publication["pub_url"]
-
-            # todo
-            # define real pdf link and update path
-            # if self.pdf_link is real pdf link:
-            #     self.pdf_link = os.path.abspath(self.pdf_link).replace(" ", "%20")
+        if "journal" in publication["bib"].keys():
+            self.journal_or_book = publication["bib"]["journal"]
+            self.in_journal = True
+        elif "booktitle" in publication["bib"].keys():
+            self.journal_or_book = publication["bib"]["booktitle"]
+            self.in_journal = False
         else:
-            self.title = title
-            self.author = author
-            self.journal = journal
-            self.abstract = abstract
-            self.pdf_link = pdf_link
+            raise ValueError
+        self.abstract = publication["bib"]["abstract"]
+
+        self.pdf_link = publication["pub_url"]
+
+        print(self.pdf_link)
+        if "http" not in self.pdf_link:
+            self.pdf_link = os.path.abspath(self.pdf_link).replace(" ", "%20")
+        print(self.pdf_link)
 
     @property
     def stream(self):
@@ -183,7 +169,7 @@ class CitingPublication(Markdown):
             [
                 Header(
                     Hyperlink(self.title, self.pdf_link)
-                    if self.pdf_link is not None and os.path.exists(self.pdf_link)
+                    if self.pdf_link is not None
                     else PlainText(self.title)
                 ),
                 SingleLineBreak(),
@@ -191,9 +177,11 @@ class CitingPublication(Markdown):
                 Space(),
                 PlainText(self.author),
                 SingleLineBreak(),
-                Emphasis("Journal:", endline=False),
+                Emphasis(
+                    "Journal:" if self.in_journal else "Booktitle:", endline=False
+                ),
                 Space(),
-                PlainText(self.journal),
+                PlainText(self.journal_or_book),
                 SingleLineBreak(),
                 Emphasis("Abstruct:"),
                 Space(),
