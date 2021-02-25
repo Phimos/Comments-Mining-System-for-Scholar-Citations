@@ -20,7 +20,10 @@ class ProxyNova(BaseProxiesCrawler):
 
     def __init__(self) -> None:
         super().__init__()
-        self.PROXY_NOVA_WEBSITE = "https://www.proxynova.com/proxy-server-list/"
+        # todo: set different anonymity level
+        self.PROXY_NOVA_WEBSITE = (
+            "https://www.proxynova.com/proxy-server-list/elite-proxies/"
+        )
 
     @retry(
         wait=wait_random(1, 5),

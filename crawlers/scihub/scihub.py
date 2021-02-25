@@ -18,6 +18,9 @@ import urllib3
 from bs4 import BeautifulSoup
 from retrying import retry
 
+
+from ..freeproxy import FreeProxyPool
+
 # log config
 logging.basicConfig()
 logger = logging.getLogger("Sci-Hub")
@@ -44,6 +47,10 @@ class SciHub(object):
         self.sess.headers = HEADERS
         self.available_base_url_list = self._get_available_scihub_urls()
         self.base_url = self.available_base_url_list[0] + "/"
+        # self.proxy_pool = FreeProxyPool(refresh=False, download=False)
+        # new_proxy = self.proxy_pool.next_proxy()
+        # print("proxy changed: %s", new_proxy["http"])
+        # self.set_proxy(new_proxy["http"])
 
     def _get_available_scihub_urls(self):
         """
@@ -127,7 +134,9 @@ class SciHub(object):
             start += 10
 
     @retry(wait_random_min=100, wait_random_max=1000, stop_max_attempt_number=10)
-    def download(self, identifier, destination="", path=None):
+    def download(
+        self, identifier, destination="", path=None
+    ):  # todo: add session level retry
         """
         Downloads a paper from sci-hub given an indentifier (DOI, PMID, URL).
         Currently, this can potentially be blocked by a captcha if a certain
@@ -139,9 +148,12 @@ class SciHub(object):
             self._save(
                 data["pdf"], os.path.join(destination, path if path else data["name"])
             )
+            return data
         else:
-            print(data)
-        return data
+            # new_proxy = self.proxy_pool.next_proxy()
+            # print("proxy changed: %s", new_proxy["http"])
+            # self.set_proxy(new_proxy["http"])
+            return None
 
     def fetch(self, identifier):
         """
@@ -166,14 +178,14 @@ class SciHub(object):
                     "Failed to fetch pdf with identifier %s "
                     "(resolved url %s) due to captcha" % (identifier, url)
                 )
-                raise CaptchaNeedException(
-                    "Failed to fetch pdf with identifier %s "
-                    "(resolved url %s) due to captcha" % (identifier, url)
-                )
-                # return {
-                #     'err': 'Failed to fetch pdf with identifier %s (resolved url %s) due to captcha'
-                #            % (identifier, url)
-                # }
+                # raise CaptchaNeedException(
+                #    "Failed to fetch pdf with identifier %s "
+                #    "(resolved url %s) due to captcha" % (identifier, url)
+                # )
+                return {
+                    "err": "Failed to fetch pdf with identifier %s (resolved url %s) due to captcha"
+                    % (identifier, url)
+                }
             else:
                 return {
                     "pdf": res.content,
@@ -246,8 +258,11 @@ class SciHub(object):
         """
         Save a file give data and a path.
         """
-        with open(path, "wb") as f:
-            f.write(data)
+        try:
+            with open(path, "wb") as f:
+                f.write(data)
+        except:
+            pass
 
     def _get_soup(self, html):
         """

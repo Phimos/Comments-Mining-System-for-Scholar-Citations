@@ -26,6 +26,7 @@ class FreeProxyPool(object):
         self.ip_save_path = ip_save_path
         self.TEST_URL = "https://scholar.google.com/scholar?q=covid"
         self.HTTP_PROXY = "http://{}:{}"
+        self.HTTPS_PROXY = "https://{}:{}"
         self.TIMEOUT = 5
         self.proxies = self.get_proxies(refresh, download, save, ip_save_path)
 
@@ -54,7 +55,8 @@ class FreeProxyPool(object):
             Each row is represented as a proxy, an ip address and a port.
         """
         if download:
-            proxies_crawlers = [ProxyScan(), ProxyScrape(), SSLProxies(), ProxyNova()]
+            # proxies_crawlers = [ProxyScan(), ProxyScrape(), SSLProxies(), ProxyNova()]
+            proxies_crawlers = [ProxyNova()]
             proxies_tables = []
             for crawler in proxies_crawlers:
                 proxies_tables.append(crawler.get_proxies())
@@ -80,7 +82,10 @@ class FreeProxyPool(object):
                 raise ValueError
 
     def format_proxy(self, ip: str, port: str) -> Dict[str, str]:
-        return {"http": self.HTTP_PROXY.format(ip, port), "https": None}
+        return {
+            "http": self.HTTP_PROXY.format(ip, port),
+            "https": self.HTTPS_PROXY.format(ip, port),
+        }
 
     def next_proxy(self) -> Dict[str, str]:
         proxy = next(self.proxies_gen)
@@ -101,6 +106,7 @@ class FreeProxyPool(object):
         pass
 
     def verify_proxy(self, proxy) -> bool:
+        print("verify proxy:", proxy)
         with requests.Session() as session:
             session.proxies = proxy
             try:

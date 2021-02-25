@@ -2,7 +2,9 @@ from crawlers import *
 from utils.markdown_writer import CitingDocument, CitingPublication
 from typing import Optional, List
 from crawlers.freeproxy.freeproxy import FreeProxyPool
+from crawlers.scholarly import ProxyGenerator
 import logging
+import json
 import os
 
 
@@ -14,7 +16,6 @@ class PaperCollecter(object):
         year_low: Optional[int] = 2020,
         year_high: Optional[int] = 2020,
         result_dir: str = "./result",
-        http_proxy: Optional[str] = "http://36.90.37.60:8080",
     ) -> None:
         super().__init__()
         if not os.path.exists(result_dir):
@@ -26,10 +27,10 @@ class PaperCollecter(object):
         self.year_high = year_high
         self.scholar_crawler = scholarly
         self.scihub_crawler = SciHub()
-        self.scihub_crawler.set_proxy(http_proxy)
-
-    def collect(self):
-        pass
+        self.proxies_pool = FreeProxyPool()
+        pg = ProxyGenerator()
+        pg.SingleProxy(http="http://127.0.0.1:24000", https="http://127.0.0.1:24000")
+        self.scholar_crawler.use_proxy(pg)
 
     def collect_by_author(self, name: str):
         save_dir = os.path.join(self.result_dir, name)
@@ -40,10 +41,7 @@ class PaperCollecter(object):
         scholarly.pprint(author)
         author = self.scholar_crawler.fill(author)
         for pub in author["publications"]:
-            # scholarly.pprint(scholarly.fill(pub))
             self.collect_by_publication(pub, name)
-            break
-
         pass
 
     def collect_by_publication(
@@ -57,27 +55,69 @@ class PaperCollecter(object):
             publication, document_path=os.path.join(save_dir, "summary.md")
         )
         cnt = 0
-        for i, val in enumerate(self.scholar_crawler.citedby(publication)):
+        citing_publictions = self.scholar_crawler.citedby(publication)
+        for i, val in enumerate(citing_publictions):
             pub = self.scholar_crawler.fill(val)
-            pub["pub_url"] = self._download_pdf(pub, save_dir)
+
+            tmp = self._download_pdf(pub, save_dir)
+            if tmp is None:
+                self.scihub_crawler = SciHub()  # reset
+                print("new type reset!")
+            else:
+                pub["pub_url"] = tmp
             cd.add_publication(pub)
-            scholarly.pprint(pub)
+            self.scholar_crawler.pprint(pub)
             cnt = cnt + 1
-            if cnt > 15:
+            if cnt >= 10:
                 break
         cd.save()
 
     def _download_pdf(self, publication: Publication, save_dir: str):
-        self.scihub_crawler.download(
+        ok = self.scihub_crawler.download(
             publication["pub_url"], save_dir, publication["bib"]["title"] + ".pdf"
         )
-        return os.path.join(save_dir, publication["bib"]["title"] + ".pdf")
+        return (
+            os.path.join(save_dir, publication["bib"]["title"] + ".pdf")
+            if ok is not None
+            else None
+        )
 
-    def _collect_citation_info():
+    def collect_metadata(self):
+        os.makedirs(self.metadata_save_dir, exist_ok=True)
+        for author in self.authors:
+            author_info = self.collect_metadata_author_info(author)
+            self.collect_metadata_publications(author_info)
+
+    def collect_metadata_author_info(self, author):
+        save_dir = os.path.join(self.metadata_save_dir, author["name"])
+        os.makedirs(save_dir, exist_ok=True)
+        author_info = next(self.scholar_crawler.search_author(author["name"]))
+        author_info = self.scholar_crawler.fill(author_info)
+        with open(os.path.join(save_dir, "author_info.json"), "w") as outfile:
+            dict_author_info = dict(author_info).copy()
+            dict_author_info.pop("filled")
+            dict_author_info.pop("source")
+            print(dict_author_info)
+            json.dump(dict_author_info, outfile)
+        return author_info
+
+    def collect_metadata_publications(self, author):
         pass
 
-    def _collect_pdf_files(self):
+    def collect_pdf_files(self):
         pass
+
+    def collect(self, config):
+        self.init_from_config(config)
+        self.collect_metadata()
+        self.collect_pdf_files()
+        pass
+
+    def init_from_config(self, config):
+        self.timeout = config["timeout"]
+        self.metadata_save_dir = config["metadata_save_dir"]
+        self.pdf_save_dir = config["pdf_save_dir"]
+        self.authors = config["authors"]
 
 
 """
@@ -98,4 +138,8 @@ for pub in publications:
 
 
 pc = PaperCollecter()
-pc.collect_by_author("Zhouchen Lin")
+with open("./configs/basic.json") as infile:
+    config = json.load(infile)
+print(config)
+pc.init_from_config(config)
+pc.collect_metadata()

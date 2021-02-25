@@ -12,9 +12,9 @@ from .author_parser import AuthorParser
 from .publication_parser import PublicationParser, _SearchScholarIterator
 from .data_types import Author, AuthorSource, Publication, PublicationSource
 
-_AUTHSEARCH = '/citations?hl=en&view_op=search_authors&mauthors={0}'
-_KEYWORDSEARCH = '/citations?hl=en&view_op=search_authors&mauthors=label:{0}'
-_PUBSEARCH = '/scholar?hl=en&q={0}'
+_AUTHSEARCH = "/citations?hl=en&view_op=search_authors&mauthors={0}"
+_KEYWORDSEARCH = "/citations?hl=en&view_op=search_authors&mauthors=label:{0}"
+_PUBSEARCH = "/scholar?hl=en&q={0}"
 
 
 class _Scholarly:
@@ -25,7 +25,7 @@ class _Scholarly:
         self.env = os.environ.copy()
         self.__nav = Navigator()
 
-    def set_retries(self, num_retries: int)->None:
+    def set_retries(self, num_retries: int) -> None:
         """Sets the number of retries in case of errors
 
         :param num_retries: the number of retries
@@ -34,8 +34,7 @@ class _Scholarly:
 
         return self.__nav._set_retries(num_retries)
 
-
-    def use_proxy(self, proxy_generator: ProxyGenerator)->None:
+    def use_proxy(self, proxy_generator: ProxyGenerator) -> None:
         """Select which proxy method to use.
         See the available ProxyGenerator methods.
 
@@ -43,7 +42,6 @@ class _Scholarly:
         :type proxy_generator: ProxyGenerator
         """
         self.__nav.use_proxy(proxy_generator)
-
 
     def set_logger(self, enable: bool):
         """Enable or disable the logger for google scholar. 
@@ -55,12 +53,16 @@ class _Scholarly:
         """Set timeout period in seconds for scholarly"""
         self.__nav.set_timeout(timeout)
 
-
-    def search_pubs(self,
-                    query: str, patents: bool = True,
-                    citations: bool = True, year_low: int = None,
-                    year_high: int = None, sort_by: str = "relevance",
-                    include_last_year: str = "abstracts")->_SearchScholarIterator:
+    def search_pubs(
+        self,
+        query: str,
+        patents: bool = True,
+        citations: bool = True,
+        year_low: int = None,
+        year_high: int = None,
+        sort_by: str = "relevance",
+        include_last_year: str = "abstracts",
+    ) -> _SearchScholarIterator:
         """Searches by query and returns a generator of Publication objects
 
         :param query: terms to be searched
@@ -121,29 +123,35 @@ class _Scholarly:
         """
         url = _PUBSEARCH.format(requests.utils.quote(query))
 
-        yr_lo = '&as_ylo={0}'.format(year_low) if year_low is not None else ''
-        yr_hi = '&as_yhi={0}'.format(year_high) if year_high is not None else ''
-        citations = '&as_vis={0}'.format(1 - int(citations))
-        patents = '&as_sdt={0},33'.format(1 - int(patents))
-        sortby = ''
+        yr_lo = "&as_ylo={0}".format(year_low) if year_low is not None else ""
+        yr_hi = "&as_yhi={0}".format(year_high) if year_high is not None else ""
+        citations = "&as_vis={0}".format(1 - int(citations))
+        patents = "&as_sdt={0},33".format(1 - int(patents))
+        sortby = ""
 
         if sort_by == "date":
             if include_last_year == "abstracts":
-                sortby = '&scisbd=1'
+                sortby = "&scisbd=1"
             elif include_last_year == "everything":
-                sortby = '&scisbd=2'
+                sortby = "&scisbd=2"
             else:
-                print("Invalid option for 'include_last_year', available options: 'everything', 'abstracts'")
+                print(
+                    "Invalid option for 'include_last_year', available options: 'everything', 'abstracts'"
+                )
                 return
         elif sort_by != "relevance":
-            print("Invalid option for 'sort_by', available options: 'relevance', 'date'")
+            print(
+                "Invalid option for 'sort_by', available options: 'relevance', 'date'"
+            )
             return
-            
+
         # improve str below
         url = url + yr_lo + yr_hi + citations + patents + sortby
         return self.__nav.search_publications(url)
 
-    def search_single_pub(self, pub_title: str, filled: bool = False)->PublicationParser:
+    def search_single_pub(
+        self, pub_title: str, filled: bool = False
+    ) -> PublicationParser:
         """Search by scholar query and return a single Publication container object
         
         :param pub_title: Title of the publication to search
@@ -180,7 +188,7 @@ class _Scholarly:
         """
         url = _AUTHSEARCH.format(requests.utils.quote(name))
         return self.__nav.search_authors(url)
-    
+
     def fill(self, object: dict, sections=[]) -> Author or Publication:
         """Fills the object according to its type.
         If the container type is Author it will fill the additional author fields
@@ -192,46 +200,45 @@ class _Scholarly:
         :type sections: list
         """
 
-        if object['container_type'] == "Author":
+        if object["container_type"] == "Author":
             author_parser = AuthorParser(self.__nav)
             object = author_parser.fill(object, sections)
             if object is False:
                 raise ValueError("Incorrect input")
-        elif object['container_type'] == "Publication":
+        elif object["container_type"] == "Publication":
             publication_parser = PublicationParser(self.__nav)
             object = publication_parser.fill(object)
         return object
 
-    def bibtex(self, object: Publication)->str:
+    def bibtex(self, object: Publication) -> str:
         """Returns a bibtex entry for a publication that has either Scholar source
         or citation source
         
         :param object: The Publication object for the bibtex exportation
         :type object: Publication
         """
-        if object['container_type'] == "Publication":
-           publication_parser = PublicationParser(self.__nav) 
-           return publication_parser.bibtex(object)
+        if object["container_type"] == "Publication":
+            publication_parser = PublicationParser(self.__nav)
+            return publication_parser.bibtex(object)
         else:
             print("Object not supported for bibtex exportation")
             return
 
-    def citedby(self, object: Publication)->_SearchScholarIterator:
+    def citedby(self, object: Publication) -> _SearchScholarIterator:
         """Searches Google Scholar for other articles that cite this Publication
         and returns a Publication generator.
 
         :param object: The Publication object for the bibtex exportation
         :type object: Publication
         """
-        if object['container_type'] == "Publication":
-           publication_parser = PublicationParser(self.__nav) 
-           return publication_parser.citedby(object)
+        if object["container_type"] == "Publication":
+            publication_parser = PublicationParser(self.__nav)
+            return publication_parser.citedby(object)
         else:
             print("Object not supported for bibtex exportation")
             return
 
-
-    def search_author_id(self, id: str, filled: bool = False)->Author:
+    def search_author_id(self, id: str, filled: bool = False) -> Author:
         """Search by author id and return a single Author object
 
         :Example::
@@ -287,7 +294,7 @@ class _Scholarly:
         url = _KEYWORDSEARCH.format(requests.utils.quote(keyword))
         return self.__nav.search_authors(url)
 
-    def search_pubs_custom_url(self, url: str)->_SearchScholarIterator:
+    def search_pubs_custom_url(self, url: str) -> _SearchScholarIterator:
         """Search by custom URL and return a generator of Publication objects
         URL should be of the form '/scholar?q=...'
 
@@ -296,7 +303,7 @@ class _Scholarly:
         """
         return self.__nav.search_publications(url)
 
-    def search_author_custom_url(self, url: str)->Author:
+    def search_author_custom_url(self, url: str) -> Author:
         """Search by custom URL and return a generator of Author objects
         URL should be of the form '/citation?q=...'
 
@@ -305,39 +312,41 @@ class _Scholarly:
         """
         return self.__nav.search_authors(url)
 
-    def pprint(self, object: Author or Publication)->None:
+    def pprint(self, object: Author or Publication) -> None:
         """Pretty print an Author or Publication container object
         
         :param object: Publication or Author container object
         :type object: Author or Publication
         """
-        if 'container_type' not in object:
+        if "container_type" not in object:
             print("Not a scholarly container object")
             return
 
         to_print = copy.deepcopy(object)
-        if to_print['container_type'] == 'Publication':
-            to_print['source'] = PublicationSource(to_print['source']).name
-        elif to_print['container_type'] == 'Author':
+        if to_print["container_type"] == "Publication":
+            to_print["source"] = PublicationSource(to_print["source"]).name
+        elif to_print["container_type"] == "Author":
             parser = AuthorParser(self.__nav)
-            to_print['source'] = AuthorSource(to_print['source']).name
-            if parser._sections == to_print['filled']:
-                to_print['filled'] = True
+            to_print["source"] = AuthorSource(to_print["source"]).name
+            if parser._sections == to_print["filled"]:
+                to_print["filled"] = True
             else:
-                to_print['filled'] = False
-            
-            if 'coauthors' in to_print:
-                for coauthor in to_print['coauthors']:
-                    coauthor['filled'] = False
-                    del coauthor['container_type']
-                    coauthor['source'] = AuthorSource(coauthor['source']).name
+                to_print["filled"] = False
 
-            if 'publications' in to_print:
-                for publication in to_print['publications']:
-                    publication['source'] = PublicationSource(publication['source']).name
-                    del publication['container_type']
+            if "coauthors" in to_print:
+                for coauthor in to_print["coauthors"]:
+                    coauthor["filled"] = False
+                    del coauthor["container_type"]
+                    coauthor["source"] = AuthorSource(coauthor["source"]).name
 
-        del to_print['container_type']
+            if "publications" in to_print:
+                for publication in to_print["publications"]:
+                    publication["source"] = PublicationSource(
+                        publication["source"]
+                    ).name
+                    del publication["container_type"]
+
+        del to_print["container_type"]
         print(pprint.pformat(to_print))
 
     def search_org(self, name: str, fromauthor: bool = False) -> list:

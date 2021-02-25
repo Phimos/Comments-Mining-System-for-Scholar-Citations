@@ -47,8 +47,8 @@ class ProxyGenerator(object):
         logging.basicConfig(filename="scholar.log", level=logging.INFO)
         self.logger = logging.getLogger("scholarly")
 
-        # self._proxy_gen = None
-        self._proxy_gen = FreeProxyPool(refresh=False, download=False)
+        self._proxy_gen = None
+        # self._proxy_gen = FreeProxyPool(refresh=False, download=False)
         # If we use a proxy or Tor, we set this to True
         self._proxy_works = False
         self._use_luminati = False
@@ -168,6 +168,7 @@ class ProxyGenerator(object):
             https = http
 
         proxies = {"http": http, "https": https}
+        print("using proxies:", proxies)
         self._proxy_works = self._check_proxy(proxies)
         if self._proxy_works:
             self.logger.info(f"Enabling proxies: http={http} https={https}")
@@ -447,6 +448,8 @@ class ProxyGenerator(object):
                     f"Try #{num_tries} failed. Switching proxy."
                 )  # TODO: add tries
             # Try to get another proxy
+            # added by me
+            self.logger.info("USE ANOTHER PROXY!!!!!!!!!!!!")
             new_proxy = self._proxy_gen()
             while not self._use_proxy(new_proxy):
                 new_proxy = self._proxy_gen()
