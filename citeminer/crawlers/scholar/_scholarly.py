@@ -4,7 +4,7 @@ import random
 import os
 import copy
 import pprint
-from typing import Callable
+from typing import Callable, Dict
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
 from dotenv import find_dotenv, load_dotenv
@@ -44,7 +44,7 @@ class _Scholarly:
         self.__nav.use_proxy(proxy_generator)
 
     def set_logger(self, enable: bool):
-        """Enable or disable the logger for google scholar. 
+        """Enable or disable the logger for google scholar.
         Enabled by default
         """
         self.__nav.set_logger(enable)
@@ -153,7 +153,7 @@ class _Scholarly:
         self, pub_title: str, filled: bool = False
     ) -> PublicationParser:
         """Search by scholar query and return a single Publication container object
-        
+
         :param pub_title: Title of the publication to search
         :type pub_title: string
         :param filled: Whether the application should be filled with additional information
@@ -193,7 +193,7 @@ class _Scholarly:
         """Fills the object according to its type.
         If the container type is Author it will fill the additional author fields
         If it is Publication it will fill it accordingly.
-        
+
         :param object: the Author or Publication object that needs to get filled
         :type object: Author or Publication
         :param sections: the sections that the user wants filled for an Author object. This can be: ['basics', 'indices', 'counts', 'coauthors', 'publications']
@@ -213,7 +213,7 @@ class _Scholarly:
     def bibtex(self, object: Publication) -> str:
         """Returns a bibtex entry for a publication that has either Scholar source
         or citation source
-        
+
         :param object: The Publication object for the bibtex exportation
         :type object: Publication
         """
@@ -263,7 +263,7 @@ class _Scholarly:
 
     def search_keyword(self, keyword: str):
         """Search by keyword and return a generator of Author objects
-        
+
         :param keyword: keyword to be searched
         :type keyword: str
 
@@ -312,9 +312,41 @@ class _Scholarly:
         """
         return self.__nav.search_authors(url)
 
+    def get_pprint(self, object: Author or Publication) -> Dict:
+        if "container_type" not in object:
+            print("Not a scholarly container object")
+            return
+
+        to_print = copy.deepcopy(object)
+        if to_print["container_type"] == "Publication":
+            to_print["source"] = PublicationSource(to_print["source"]).name
+        elif to_print["container_type"] == "Author":
+            parser = AuthorParser(self.__nav)
+            to_print["source"] = AuthorSource(to_print["source"]).name
+            if parser._sections == to_print["filled"]:
+                to_print["filled"] = True
+            else:
+                to_print["filled"] = False
+
+            if "coauthors" in to_print:
+                for coauthor in to_print["coauthors"]:
+                    coauthor["filled"] = False
+                    del coauthor["container_type"]
+                    coauthor["source"] = AuthorSource(coauthor["source"]).name
+
+            if "publications" in to_print:
+                for publication in to_print["publications"]:
+                    publication["source"] = PublicationSource(
+                        publication["source"]
+                    ).name
+                    del publication["container_type"]
+
+        del to_print["container_type"]
+        return to_print
+
     def pprint(self, object: Author or Publication) -> None:
         """Pretty print an Author or Publication container object
-        
+
         :param object: Publication or Author container object
         :type object: Author or Publication
         """

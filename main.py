@@ -1,7 +1,6 @@
 from crawlers import *
 from utils.markdown_writer import CitingDocument, CitingPublication
 from typing import Optional, List
-from crawlers.freeproxy.freeproxy import FreeProxyPool
 from crawlers.scholarly import ProxyGenerator
 import logging
 import json
@@ -27,7 +26,6 @@ class PaperCollecter(object):
         self.year_high = year_high
         self.scholar_crawler = scholarly
         self.scihub_crawler = SciHub()
-        self.proxies_pool = FreeProxyPool()
         pg = ProxyGenerator()
         pg.SingleProxy(http="http://127.0.0.1:24000", https="http://127.0.0.1:24000")
         self.scholar_crawler.use_proxy(pg)
@@ -58,6 +56,7 @@ class PaperCollecter(object):
         citing_publictions = self.scholar_crawler.citedby(publication)
         for i, val in enumerate(citing_publictions):
             pub = self.scholar_crawler.fill(val)
+            self.scholar_crawler.pprint(pub)
 
             tmp = self._download_pdf(pub, save_dir)
             if tmp is None:
@@ -138,6 +137,10 @@ for pub in publications:
 
 
 pc = PaperCollecter()
+
+pc.collect_by_author("Zhouchen Lin")
+exit(0)
+
 with open("./configs/basic.json") as infile:
     config = json.load(infile)
 print(config)

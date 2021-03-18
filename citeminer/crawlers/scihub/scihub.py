@@ -18,9 +18,6 @@ import urllib3
 from bs4 import BeautifulSoup
 from retrying import retry
 
-
-from ..freeproxy import FreeProxyPool
-
 # log config
 logging.basicConfig()
 logger = logging.getLogger("Sci-Hub")
@@ -38,19 +35,19 @@ HEADERS = {
 
 class SciHub(object):
     """
-    SciHub class can search for papers on Google Scholars 
+    SciHub class can search for papers on Google Scholars
     and fetch/download papers from sci-hub.io
     """
 
     def __init__(self):
-        self.sess = requests.Session()
-        self.sess.headers = HEADERS
         self.available_base_url_list = self._get_available_scihub_urls()
         self.base_url = self.available_base_url_list[0] + "/"
-        # self.proxy_pool = FreeProxyPool(refresh=False, download=False)
-        # new_proxy = self.proxy_pool.next_proxy()
-        # print("proxy changed: %s", new_proxy["http"])
-        # self.set_proxy(new_proxy["http"])
+
+        self._proxy_works = False
+        self._session = None
+        self._new_session()
+
+        self._retry_cnt = 0
 
     def _get_available_scihub_urls(self):
         """
@@ -71,10 +68,28 @@ class SciHub(object):
         :return:
         """
         if proxy:
-            self.sess.proxies = {
+            self._proxy_works = True
+            self._session.proxies = {
                 "http": proxy,
                 "https": proxy,
             }
+            self._new_session()
+
+    def _new_session(self):
+        proxies = {}
+        if self._session:
+            proxies = self._session.proxies
+            self._close_session()
+        self._session = requests.Session()
+        self._session.headers.update(HEADERS)
+
+        if self._proxy_works:
+            self._session.proxies = proxies
+        return self._session
+
+    def _close_session(self):
+        if self._session:
+            self._session.close()
 
     def _change_base_url(self):
         if not self.available_base_url_list:
@@ -94,7 +109,7 @@ class SciHub(object):
 
         while True:
             try:
-                res = self.sess.get(
+                res = self._session.get(
                     SCHOLARS_BASE_URL, params={"q": query, "start": start}
                 )
             except requests.exceptions.RequestException as e:
@@ -133,7 +148,7 @@ class SciHub(object):
 
             start += 10
 
-    @retry(wait_random_min=100, wait_random_max=1000, stop_max_attempt_number=10)
+    #  @retry(wait_random_min=100, wait_random_max=1000, stop_max_attempt_number=10)
     def download(
         self, identifier, destination="", path=None
     ):  # todo: add session level retry
@@ -142,18 +157,22 @@ class SciHub(object):
         Currently, this can potentially be blocked by a captcha if a certain
         limit has been reached.
         """
+        print("scihub download:", identifier)
+
         data = self.fetch(identifier)
 
-        if not "err" in data:
+        if data and not "err" in data:
+            self._retry_cnt = 0
             self._save(
                 data["pdf"], os.path.join(destination, path if path else data["name"])
             )
-            return data
+            return True
+        elif self._retry_cnt < 2:
+            self._retry_cnt += 1
+            self._new_session()
+            return self.download(identifier, destination, path)
         else:
-            # new_proxy = self.proxy_pool.next_proxy()
-            # print("proxy changed: %s", new_proxy["http"])
-            # self.set_proxy(new_proxy["http"])
-            return None
+            return False
 
     def fetch(self, identifier):
         """
@@ -170,7 +189,7 @@ class SciHub(object):
             # and requests doesn't know how to download them.
             # as a hacky fix, you can add them to your store
             # and verifying would work. will fix this later.
-            res = self.sess.get(url, verify=False)
+            res = self._session.get(url, verify=False)
 
             if res.headers["Content-Type"] != "application/pdf":
                 self._change_base_url()
@@ -226,7 +245,7 @@ class SciHub(object):
         Sci-Hub embeds papers in an iframe. This function finds the actual
         source url which looks something like https://moscow.sci-hub.io/.../....pdf.
         """
-        res = self.sess.get(self.base_url + identifier, verify=False)
+        res = self._session.get(self.base_url + identifier, verify=False)
         s = self._get_soup(res.content)
         iframe = s.find("iframe")
         if iframe:
@@ -272,7 +291,7 @@ class SciHub(object):
 
     def _generate_name(self, res):
         """
-        Generate unique filename for paper. Returns a name by calcuating 
+        Generate unique filename for paper. Returns a name by calcuating
         md5 hash of file contents, then appending the last 20 characters
         of the url which typically provides a good paper identifier.
         """

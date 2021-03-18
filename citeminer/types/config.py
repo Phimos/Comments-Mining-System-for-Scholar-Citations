@@ -1,5 +1,3 @@
-from citeminer import publication
-from dataclasses import dataclass, is_dataclass
 from typing import List, Optional
 
 
@@ -19,7 +17,3 @@ class Config(object):
     metadata_save_dir: str
     pdf_save_dir: str
     authors: Optional[List[AuthorConfig]]
-
-
-if __name__ == "__main__":
-    pass

@@ -1,5 +1,5 @@
 from typing import List, Union, Optional
-from .data_types import Publication
+from ..types.data_types import Publication
 import os
 
 

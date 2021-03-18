@@ -131,6 +131,7 @@ dmypy.json
 # Papers and IPs
 *.csv
 *.pdf
+*.txt
 result/
 
 # MacOS

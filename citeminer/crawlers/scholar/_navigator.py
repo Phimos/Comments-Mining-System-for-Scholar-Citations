@@ -125,6 +125,7 @@ class Navigator(object, metaclass=Singleton):
                                 "Retrying immediately with another session."
                             )
                         else:
+                            pass
                             if not self.pm._use_luminati:
                                 w = random.uniform(60, 2 * 60)
                                 self.logger.info(
@@ -196,7 +197,8 @@ class Navigator(object, metaclass=Singleton):
         :rtype: {bool}
         """
         return self._has_captcha(
-            lambda i: f'id="{i}"' in text, lambda c: f'class="{c}"' in text,
+            lambda i: f'id="{i}"' in text,
+            lambda c: f'class="{c}"' in text,
         )
 
     def _webdriver_has_captcha(self) -> bool:
@@ -301,8 +303,8 @@ class Navigator(object, metaclass=Singleton):
 
     def search_organization(self, url: str, fromauthor: bool) -> list:
         """Generate instiution object from author search page.
-           if no results are found and `fromuthor` is True, then use the first author from the search
-           to get institution/organization name.
+        if no results are found and `fromuthor` is True, then use the first author from the search
+        to get institution/organization name.
         """
         soup = self._get_soup(url)
         rows = soup.find_all("h3", "gsc_inst_res")

@@ -24,8 +24,6 @@ from selenium.webdriver.support.wait import TimeoutException, WebDriverWait
 from stem import Signal
 from stem.control import Controller
 
-from ..freeproxy.freeproxy import FreeProxyPool
-
 
 class DOSException(Exception):
     """DOS attack was detected."""

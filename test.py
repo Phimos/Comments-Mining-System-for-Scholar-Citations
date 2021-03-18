@@ -1,6 +1,5 @@
 import unittest
-from citeminer.test.test_scihub import TestSciHub
-from citeminer.config import Config
+from citeminer.test.test_collector import TestCollector
 import json
 
 if __name__ == "__main__":
