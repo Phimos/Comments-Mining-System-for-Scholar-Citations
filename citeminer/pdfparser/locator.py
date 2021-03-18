@@ -1,37 +1,57 @@
+from os import replace
 import re
 from typing import Optional, List
 
 
-sentece_pattern = "[^\\.]*\\."
+sentence_pattern = "[^\\.]*\\."
 single_index_pattern = "\\[(\\d+)\\]"
 multi_index_pattern = "\\[[^\\[\\]]*[^\\d](\\d+)[^\\d]+[^\\[\\]]*\\]"
+
+index_pattern = "\\[[^\\[\\]a-zA-Z]+\\]"
+single_author_pattern = "[a-zA-Z\\s\\.\\&]+,\\s\\d{4}"
+author_pattern = (
+    "\\(" + single_author_pattern + "(" + ";" + single_author_pattern + ")*" + "\\)"
+)
 
 
 class CitationLocator(object):
     def __init__(self) -> None:
         super().__init__()
 
-    def locate(
-        self,
-        doc: str,
-        index: Optional[str] = None,
-        first_author: Optional[str] = None,
-        pub_year: Optional[int] = None,
-        index_type: str = "bracket",
-    ) -> List[str]:
-        if index_type == "bracket":
-            pass
-        elif index_type == "author":
-            pass
-        else:
-            raise ValueError
+    def _check_index(self, text: str, index: str) -> bool:
+        return index in re.findall("\\d+", text)
 
-    def locate_by_index(self, doc: str, index: str):
-        pass
+    def locate_by_index(self, text: str, index: str) -> List[str]:
+        comments = []
+        for item in re.finditer(index_pattern, text):
+            if self._check_index(item.group(), index):
+                # Todo: replace it with better match algo
+                comments.append(text[item.start() - 500 : item.end() + 100])
+        return comments
 
-    def locate_by_author(self, doc: str, author: str, year: int):
+    def _check_author(self, text: str, author: str, year: str) -> bool:
+        for single_author in re.findall(single_author_pattern, text):
+            if author in single_author and year in single_author:
+                return True
+        return False
+
+    def locate_by_author(self, text: str, author: str, year: str) -> List[str]:
+        for item in re.finditer(author_pattern, text):
+            if self._check_author(item.group(), author, year):
+                print(item.group())
         pass
 
 
 if __name__ == "__main__":
+    locator = CitationLocator()
+    with open("c.txt") as f:
+        text = f.read()
+    text = text.replace("\n", "")
+
+    print(locator.locate_by_index(text, "19"))
+
+    with open("e.txt") as f:
+        text = f.read()
+    text = text.replace("\n", "")
+    locator.locate_by_author(text, "Wang", "2019")
     pass
