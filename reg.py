@@ -19,6 +19,7 @@ def extract_citation_info(txt_path: str, title: str):
     print(citation)
 
     citation_idx = re.findall("\\[[^\\d]*(\\d*)[^\\d]*\\]", citation)[0]
+
     print(
         re.findall(
             sentence_patten
