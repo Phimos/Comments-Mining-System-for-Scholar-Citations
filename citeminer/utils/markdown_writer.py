@@ -1,5 +1,5 @@
 from typing import List, Union, Optional
-from ..types.data_types import Publication
+from citeminer.types import Publication, Author
 import os
 
 
@@ -64,7 +64,7 @@ class Space(Markdown):
 
 
 class PlainText(Markdown):
-    def __init__(self, text: str, endline=True) -> None:
+    def __init__(self, text: str, endline: bool = True) -> None:
         super().__init__()
         self.text = text
         self.endline = endline
@@ -117,7 +117,7 @@ class Emphasis(Markdown):
 
 
 class Strong(Markdown):
-    def __init__(self, text: str, endline=True) -> None:
+    def __init__(self, text: str, endline: bool = True) -> None:
         super().__init__()
         self.text = text
         self.endline = endline
@@ -136,7 +136,7 @@ class Sequence(Markdown):
         self.text_list = text_list
 
     @property
-    def stream(self):
+    def stream(self) -> str:
         return "".join([item.stream for item in self.text_list])
 
 
@@ -144,7 +144,10 @@ class CitingPublication(Markdown):
     def __init__(self, publication: Publication) -> None:
         super().__init__()
         self.title = publication["bib"]["title"]
-        self.author = publication["bib"]["author"]
+        if publication["filled"]:
+            self.author = publication["bib"]["author"]
+        else:
+            self.author = ", ".join(publication["bib"]["author"])
 
         if "journal" in publication["bib"].keys():
             self.journal_or_book = publication["bib"]["journal"]
@@ -152,8 +155,10 @@ class CitingPublication(Markdown):
         elif "booktitle" in publication["bib"].keys():
             self.journal_or_book = publication["bib"]["booktitle"]
             self.in_journal = False
-        else:
-            raise ValueError
+        else:  # todo: fix it
+            self.journal_or_book = "Unknown"
+            self.in_journal = True
+
         self.abstract = publication["bib"]["abstract"]
 
         self.pdf_link = publication["pub_url"]
@@ -164,7 +169,7 @@ class CitingPublication(Markdown):
         print(self.pdf_link)
 
     @property
-    def stream(self):
+    def stream(self) -> str:
         return Sequence(
             [
                 Header(
@@ -195,20 +200,23 @@ class CitingPublication(Markdown):
 class CitingDocument(Markdown):
     def __init__(
         self,
-        cited: Publication,
+        cited: Union[Publication, str] = "",
         publications: Optional[List[Publication]] = None,
         document_path: str = "summary.md",
     ) -> None:
         super().__init__()
         self.publications = publications if publications is not None else []
-        self.cited_publication = cited
+        if isinstance(cited, str):
+            self.cited_publication = cited
+        else:
+            self.cited_publication = cited["bib"]["title"]
         self.path = document_path
 
     @property
     def stream(self):
         return Sequence(
             [
-                Header(self.cited_publication["bib"]["title"], level=1),
+                Header(self.cited_publication, level=1),
                 DoubleLineBreak(),
                 *[CitingPublication(publication=pub) for pub in self.publications],
             ]

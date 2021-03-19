@@ -4,6 +4,7 @@ output it to plain text, html, xml or tags."""
 import argparse
 import logging
 import sys
+import io
 
 import pdfminer.high_level
 import pdfminer.layout
@@ -292,7 +293,6 @@ def maketheparser():
 
 
 def main(args=None):
-
     P = maketheparser()
     A = P.parse_args(args=args)
 
@@ -305,6 +305,9 @@ def main(args=None):
         for override, alttype in OUTPUT_TYPES:
             if A.outfile.endswith(override):
                 A.output_type = alttype
+
+    print(vars(A))
+    exit(0)
 
     outfp = extract_text(**vars(A))
     outfp.close()
