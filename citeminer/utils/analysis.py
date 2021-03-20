@@ -59,9 +59,9 @@ def collect_failed_data(metadata_dir: str) -> None:
                         tmp.append(info["pub_url"])
                         failed_puburl_only_cnt += 1
 
-    sorted(tmp)
-    for i in sorted(tmp):
-        print(i)
+    # sorted(tmp)
+    # for i in sorted(tmp):
+    #    print(i)
 
     # report failed info
     print("=" * 10 + "Failed Reason Analysis" + "=" * 10)
