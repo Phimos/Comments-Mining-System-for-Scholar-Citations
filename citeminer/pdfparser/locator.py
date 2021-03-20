@@ -19,7 +19,16 @@ class CitationLocator(object):
         super().__init__()
 
     def _check_index(self, text: str, index: str) -> bool:
-        return index in re.findall("\\d+", text)
+        indices = re.findall("\\d+", text)
+        if index in indices:
+            return True
+        elif "-" in text:
+            for left, right in re.findall("(\\d+)-(\\d+)", text):
+                if int(left) <= int(index) <= int(right):
+                    return True
+            return False
+        else:
+            return False
 
     def locate_by_index(self, text: str, index: str) -> List[str]:
         comments = []

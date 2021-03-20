@@ -163,10 +163,8 @@ class CitingPublication(Markdown):
 
         self.pdf_link = publication["pub_url"]
 
-        print(self.pdf_link)
         if "http" not in self.pdf_link:
             self.pdf_link = os.path.abspath(self.pdf_link).replace(" ", "%20")
-        print(self.pdf_link)
 
     @property
     def stream(self) -> str:

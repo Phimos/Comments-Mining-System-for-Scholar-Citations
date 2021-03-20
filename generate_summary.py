@@ -27,7 +27,6 @@ def go_allfiles(
 
 
 def convert2txt(pdf_path: str) -> None:
-    print(pdf_path)
     try:
         txt_path = pdf_path.replace(pdfs_dir, txts_dir).replace(".pdf", ".txt")
         if os.path.exists(txt_path):
@@ -36,6 +35,11 @@ def convert2txt(pdf_path: str) -> None:
         extract_text(files=[pdf_path], outfile=txt_path)
     except:
         print("error!")
+
+
+from citeminer.pdfparser.parser import PDFParser
+
+parser = PDFParser()
 
 
 def generate_summary(metadata_path: str) -> None:
@@ -58,8 +62,19 @@ def generate_summary(metadata_path: str) -> None:
             pub["pub_url"] = os.path.abspath(pdf_path)
 
         pubs.append(pub)
+        print(metadata)
+        txt_path = (
+            os.path.join(cited_dir, metadata)
+            .replace(metadata_dir, txts_dir)
+            .replace(".json", ".txt")
+        )
+        if os.path.exists(txt_path):
+            print(parser.parse(txt_path, cited_pub))
+            pass
+        else:
+            print("txt not exists")
+
     CitingDocument(cited_pub["bib"]["title"], pubs, markdown_path).save()
-    print(markdown_path)
 
 
 generate_summary(
