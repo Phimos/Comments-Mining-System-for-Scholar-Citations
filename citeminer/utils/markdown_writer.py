@@ -1,6 +1,7 @@
-from typing import List, Union, Optional
-from citeminer.types import Publication, Author
 import os
+from typing import List, Optional, Union
+
+from citeminer.types import Author, Publication
 
 
 class Markdown(object):
@@ -140,8 +141,22 @@ class Sequence(Markdown):
         return "".join([item.stream for item in self.text_list])
 
 
+class Blockquote(Markdown):
+    def __init__(self, text: str, endline: bool = True) -> None:
+        super().__init__()
+        self.text = text
+        self.endline = endline
+
+    @property
+    def stream(self) -> str:
+        if self.endline:
+            return "> " + self.text + "\n"
+        else:
+            return "> " + self.text
+
+
 class CitingPublication(Markdown):
-    def __init__(self, publication: Publication) -> None:
+    def __init__(self, publication: Publication, comments: List[str] = []) -> None:
         super().__init__()
         self.title = publication["bib"]["title"]
         if publication["filled"]:
@@ -166,8 +181,15 @@ class CitingPublication(Markdown):
         if "http" not in self.pdf_link:
             self.pdf_link = os.path.abspath(self.pdf_link).replace(" ", "%20")
 
+        self.comments = comments
+
     @property
     def stream(self) -> str:
+        quote_blocks: List[Markdown] = []
+        for comment in self.comments:
+            quote_blocks.append(Blockquote(comment))
+            quote_blocks.append(DoubleLineBreak())
+
         return Sequence(
             [
                 Header(
@@ -191,6 +213,7 @@ class CitingPublication(Markdown):
                 SingleLineBreak(),
                 PlainText(self.abstract),
                 DoubleLineBreak(),
+                *quote_blocks,
             ]
         ).stream
 
@@ -199,11 +222,11 @@ class CitingDocument(Markdown):
     def __init__(
         self,
         cited: Union[Publication, str] = "",
-        publications: Optional[List[Publication]] = None,
+        publications: List[Publication] = [],
         document_path: str = "summary.md",
     ) -> None:
         super().__init__()
-        self.publications = publications if publications is not None else []
+        self.publications = publications
         if isinstance(cited, str):
             self.cited_publication = cited
         else:
@@ -211,7 +234,7 @@ class CitingDocument(Markdown):
         self.path = document_path
 
     @property
-    def stream(self):
+    def stream(self) -> str:
         return Sequence(
             [
                 Header(self.cited_publication, level=1),
@@ -223,7 +246,7 @@ class CitingDocument(Markdown):
     def add_publication(self, pub: Publication) -> None:
         self.publications.append(pub)
 
-    def save(self):
+    def save(self) -> None:
         with open(self.path, "w") as summary_file:
             summary_file.write(self.stream)
 
