@@ -62,7 +62,7 @@ def generate_summary(metadata_path: str) -> None:
             pub["pub_url"] = os.path.abspath(pdf_path)
 
         pubs.append(pub)
-        print(metadata)
+        print(os.path.join(cited_dir, metadata))
         txt_path = (
             os.path.join(cited_dir, metadata)
             .replace(metadata_dir, txts_dir)
@@ -73,12 +73,20 @@ def generate_summary(metadata_path: str) -> None:
             pass
         else:
             print("txt not exists")
+    # todo: need to be fixed
+    try:
+        CitingDocument(cited_pub["bib"]["title"], pubs, markdown_path).save()
+    except:
+        pass
 
-    CitingDocument(cited_pub["bib"]["title"], pubs, markdown_path).save()
 
+# go_allfiles(metadata_dir, depth=3, postfix=".json", func=generate_summary)
 
 generate_summary(
     "./result/metadata/Yisen Wang/publications/A novel consistent random forest framework- Bernoulli random forests/A novel consistent random forest framework- Bernoulli random forests.json"
 )
 
+generate_summary(
+    "./result/metadata/Zhouchen Lin/publications/Towards understanding adversarial examples systematically- Exploring data size, task and model factors/Towards understanding adversarial examples systematically- Exploring data size, task and model factors.json"
+)
 # go_allfiles(pdfs_dir, depth=4, postfix=".pdf", func=convert2txt)

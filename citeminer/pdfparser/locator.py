@@ -20,6 +20,7 @@ class CitationLocator(object):
 
     def _check_index(self, text: str, index: str) -> bool:
         indices = re.findall("\\d+", text)
+        print(indices)
         if index in indices:
             return True
         elif "-" in text:

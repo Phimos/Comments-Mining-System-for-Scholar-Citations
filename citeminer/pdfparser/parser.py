@@ -21,6 +21,7 @@ class PDFParser(object):
             return self.locator.locate_by_index(text, index)
         else:
             print("index not find")
+            return []
             return self.locator.locate_by_author(
                 text, info["bib"]["author"][0], info["bib"]["pub_year"]
             )
