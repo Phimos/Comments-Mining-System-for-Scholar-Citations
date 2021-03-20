@@ -1,10 +1,11 @@
-import re
-import bibtexparser
-import arrow
 import pprint
-from bibtexparser.bibdatabase import BibDatabase
-from .data_types import BibEntry, Publication, PublicationSource
+import re
 
+import arrow
+import bibtexparser
+from bibtexparser.bibdatabase import BibDatabase
+
+from .data_types import BibEntry, Publication, PublicationSource
 
 _HOST = "https://scholar.google.com{0}"
 _SCHOLARPUBRE = r"cites=([\w-]*)"

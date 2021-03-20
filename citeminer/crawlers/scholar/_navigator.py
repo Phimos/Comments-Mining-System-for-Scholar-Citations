@@ -1,38 +1,35 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-from ._proxy_generator import ProxyGenerator
-
-from typing import Callable
-from bs4 import BeautifulSoup
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import codecs
 import hashlib
 import logging
 import random
-import time
-import requests
 import tempfile
+import time
+from typing import Callable
+from urllib.parse import urlparse
+
+import requests
 import stem.process
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 from requests.exceptions import Timeout
 from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait, TimeoutException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions
 from selenium.common.exceptions import (
-    WebDriverException,
     UnexpectedAlertPresentException,
+    WebDriverException,
 )
+from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from urllib.parse import urlparse
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import TimeoutException, WebDriverWait
 from stem import Signal
 from stem.control import Controller
-from fake_useragent import UserAgent
-from .publication_parser import _SearchScholarIterator
+
+from ._proxy_generator import ProxyGenerator
 from .author_parser import AuthorParser
-from .publication_parser import PublicationParser
 from .data_types import Author
+from .publication_parser import PublicationParser, _SearchScholarIterator
 
 
 class DOSException(Exception):

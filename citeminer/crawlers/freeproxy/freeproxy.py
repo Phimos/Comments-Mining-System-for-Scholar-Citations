@@ -1,15 +1,16 @@
-import pandas as pd
 import os
-import requests
-from typing import Dict
-from tqdm import tqdm
 import random
+from typing import Dict
 
+import pandas as pd
+import requests
+from tqdm import tqdm
+
+from .freeproxycz import ProxyCZ
+from .proxynova import ProxyNova
 from .proxyscan import ProxyScan
 from .proxyscrape import ProxyScrape
-from .freeproxycz import ProxyCZ
 from .sslproxies import SSLProxies
-from .proxynova import ProxyNova
 
 
 class FreeProxyPool(object):
@@ -48,8 +49,8 @@ class FreeProxyPool(object):
             refresh (bool):
             download (bool):
             save (bool):
-            ip_save_path (str): 
-        
+            ip_save_path (str):
+
         Returns:
             proxies (pandas.DataFrame): contains the proxies we get.
             Each row is represented as a proxy, an ip address and a port.

@@ -1,7 +1,7 @@
 import re
 from typing import Optional
-from citeminer import debug
 
+from citeminer import debug
 
 sentence_pattern = "((\\([^\\(\\)]*\\))|(\\[[^\\[\\]]*\\])|[^\\(\\)\\[\\]])\\."
 

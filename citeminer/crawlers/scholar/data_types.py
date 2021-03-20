@@ -1,7 +1,6 @@
 import sys
-
 from enum import Enum
-from typing import List, Dict, Set
+from typing import Dict, List, Set
 
 if sys.version_info >= (3, 8):
     from typing import TypedDict
@@ -11,52 +10,52 @@ else:
 
 class PublicationSource(Enum):
     """
-    Defines the source of the publication. In general, a publication 
+    Defines the source of the publication. In general, a publication
     on Google Scholar has two forms:
     * Appearing as a PUBLICATION SNIPPET and
     * Appearing as a paper in an AUTHOR PAGE
-    
+
     ------------
-    
-    "PUBLICATION SEARCH SNIPPET". 
-    This form captures the publication  when it appears as a "snippet" in 
+
+    "PUBLICATION SEARCH SNIPPET".
+    This form captures the publication  when it appears as a "snippet" in
     the context of the resuls of a publication search. For example:
-    
+
     Publication search: https://scholar.google.com/scholar?hl=en&q=adaptive+fraud+detection&btnG=&as_sdt=0%2C33
-    
+
     The entries appear under the <div class = "gs_r gs_or gs_scl"> tags
     Each entry has a data-cid attribute (e.g., data-cid="pthm1bWT96oJ")
-    
-    The same type of results will also appear when someome searches 
+
+    The same type of results will also appear when someome searches
     using the "cited by", "related articles", and "all XX versions" links
     that appear under the publication snippet.
-    
+
     "Cited By" link: https://scholar.google.com/scholar?cites=12319477714873931942&as_sdt=5,33&sciodt=0,33&hl=en
-    
+
     "Related Articles" link: https://scholar.google.com/scholar?q=related:pthm1bWT96oJ:scholar.google.com/&scioq=adaptive+fraud+detection&hl=en&as_sdt=0,33
-    
+
     "All versions" link: https://scholar.google.com/scholar?cluster=12319477714873931942&hl=en&as_sdt=0,33
-    
+
     The snippet version of these publications contain the information that appears in the results.
     Often, the snippet version will miss authors, will have an abbreviated name for the venue, and so on.
-    
-    We can fill these snippets by clicking on the "Cite" button" and get back the MLA/APA/Chicago/... 
+
+    We can fill these snippets by clicking on the "Cite" button" and get back the MLA/APA/Chicago/...
     citations forms, PLUS links for BibTeX, EndNote, RefMan, and RefWorks.
-    
+
     ------------
     "AUTHOR PUBLICATION ENTRY"
-    
-    We also have publications that appear in the "author pages" of Google Scholar. 
-    These publications are often a set of publications "merged" together. 
-    
+
+    We also have publications that appear in the "author pages" of Google Scholar.
+    These publications are often a set of publications "merged" together.
+
     The snippet version of these publications conains the title of the publication,
     a subset of the authors, the (sometimes truncated) venue, and the year of the publication
     and the number of papers that cite the publication.
-    
+
     The snippet entries appear under the <tr class="gsc_a_tr"> entries in the main page of the author.
-    
+
     To fill in the publication, we open the "detailed view" of the paper
-    
+
     Detailed view page: https://scholar.google.com/citations?view_op=view_citation&hl=en&citation_for_view=-Km63D4AAAAJ:d1gkVwhDpl0C
     """
 
@@ -67,11 +66,11 @@ class PublicationSource(Enum):
 class AuthorSource(Enum):
     """
     Defines the source of the HTML that will be parsed.
-    
+
     Author page: https://scholar.google.com/citations?hl=en&user=yxUduqMAAAAJ
-    
+
     Search authors: https://scholar.google.com/citations?view_op=search_authors&hl=en&mauthors=jordan&btnG=
-    
+
     Coauthors: From the list of co-authors from an Author page
     """
 
@@ -132,15 +131,15 @@ class Publication(TypedDict, total=False):
                        16766804411681372720 then:
                        https://scholar.google.com/scholar?cites=<cites_id>&hl=en
                        If the publication comes from a "merged" list of papers from an authors page,
-                       the "citedby_id" will be a comma-separated list of values. 
+                       the "citedby_id" will be a comma-separated list of values.
                        It is also used to return the "cluster" of all the different versions of the paper.
                        https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
                        (source: AUTHOR_PUBLICATION_ENTRY)
     :param citedby_url: This corresponds to a "single" publication on Google Scholar. Used in the web search
-                       request to return all the papers that cite the publication. 
+                       request to return all the papers that cite the publication.
                        https://scholar.google.com/scholar?cites=16766804411681372720hl=en
-                       If the publication comes from a "merged" list of papers from an authors page, 
-                       the "citedby_url" will be a comma-separated list of values. 
+                       If the publication comes from a "merged" list of papers from an authors page,
+                       the "citedby_url" will be a comma-separated list of values.
                        It is also used to return the "cluster" of all the different versions of the paper.
                        https://scholar.google.com/scholar?cluster=16766804411681372720&hl=en
     :param cites_per_year: a dictionay containing the number of citations per year for this Publication
@@ -154,7 +153,7 @@ class Publication(TypedDict, total=False):
                           values.
                           (source: AUTHOR_PUBLICATION_ENTRY)
     :param url_add_sclib: (source: PUBLICATION_SEARCH_SNIPPET)
-    :param url_scholarbib: the url containing links for 
+    :param url_scholarbib: the url containing links for
                            the BibTeX entry, EndNote, RefMan and RefWorks (source: PUBLICATION_SEARCH_SNIPPET)
     :param filled: whether the publication is fully filled or not
     :param source: The source of the publication entry
@@ -183,7 +182,7 @@ class Author(TypedDict, total=False):
     """
     :class:`Author <Author>` object used to represent an author entry on Google Scholar.
            (When source is not specified, the field is present in all sources)
-    
+
     :param scholar_id: The id of the author on Google Scholar
     :param name: The name of the author
     :param affiliation: The affiliation of the author
@@ -202,7 +201,7 @@ class Author(TypedDict, total=False):
     :param coauthors: A list of coauthors (list of Author objects) (source: SEARCH_AUTHOR_SNIPPETS)
     :param container_type: Used from the source code to identify if this container object
                            is an Author or a Publication object.
-    :param source: The place where the author information are derived 
+    :param source: The place where the author information are derived
     """
 
     scholar_id: str

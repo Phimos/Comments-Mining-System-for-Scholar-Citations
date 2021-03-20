@@ -1,15 +1,17 @@
-from ..scihub import *
-from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
-from typing import Any, Dict, Optional, List, Union
-from ..scholar import ProxyGenerator, scholarly
-from citeminer.types import Author, Publication
-import logging
 import json
+import logging
 import os
 import random
 import re
-import requests
 import time
+from typing import Any, Dict, List, Optional, Union
+
+import requests
+from citeminer.types import Author, Publication
+from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
+
+from ..scholar import ProxyGenerator, scholarly
+from ..scihub import *
 
 
 class PaperCollector(object):

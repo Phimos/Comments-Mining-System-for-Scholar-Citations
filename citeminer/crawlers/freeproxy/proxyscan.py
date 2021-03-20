@@ -1,11 +1,12 @@
 from typing import List
-from tenacity import retry
-from tenacity import stop
-from tenacity.wait import wait_random
-from tenacity.stop import stop_after_attempt
-from .base_proxy_crawler import BaseProxiesCrawler
+
 import pandas as pd
 import requests
+from tenacity import retry, stop
+from tenacity.stop import stop_after_attempt
+from tenacity.wait import wait_random
+
+from .base_proxy_crawler import BaseProxiesCrawler
 
 
 class ProxyScan(BaseProxiesCrawler):

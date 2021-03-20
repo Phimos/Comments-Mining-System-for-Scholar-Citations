@@ -1,16 +1,18 @@
 """scholarly.py"""
-import requests
-import random
-import os
 import copy
+import os
 import pprint
+import random
 from typing import Callable, Dict
+
+import requests
+from dotenv import find_dotenv, load_dotenv
+
 from ._navigator import Navigator
 from ._proxy_generator import ProxyGenerator
-from dotenv import find_dotenv, load_dotenv
 from .author_parser import AuthorParser
-from .publication_parser import PublicationParser, _SearchScholarIterator
 from .data_types import Author, AuthorSource, Publication, PublicationSource
+from .publication_parser import PublicationParser, _SearchScholarIterator
 
 _AUTHSEARCH = "/citations?hl=en&view_op=search_authors&mauthors={0}"
 _KEYWORDSEARCH = "/citations?hl=en&view_op=search_authors&mauthors=label:{0}"

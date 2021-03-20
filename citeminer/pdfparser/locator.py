@@ -1,7 +1,6 @@
-from os import replace
 import re
-from typing import Optional, List
-
+from os import replace
+from typing import List, Optional
 
 sentence_pattern = "[^\\.]*\\."
 single_index_pattern = "\\[(\\d+)\\]"

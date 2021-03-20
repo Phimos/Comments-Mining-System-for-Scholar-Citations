@@ -1,7 +1,8 @@
-import requests
-import pandas as pd
-import sys
 import logging
+import sys
+
+import pandas as pd
+import requests
 
 
 def init_logger() -> logging.Logger:
@@ -11,7 +12,8 @@ def init_logger() -> logging.Logger:
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setLevel(logging.DEBUG)
     formatter = logging.Formatter(
-        "%(asctime)s - [%(levelname)s] - %(message)s", datefmt="%Y-%m-%d %H:%M:%S",
+        "%(asctime)s - [%(levelname)s] - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
     stdout_handler.setFormatter(formatter)
 

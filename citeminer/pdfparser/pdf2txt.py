@@ -2,9 +2,9 @@
 """A command line tool for extracting text and images from PDF and
 output it to plain text, html, xml or tags."""
 import argparse
+import io
 import logging
 import sys
-import io
 
 import pdfminer.high_level
 import pdfminer.layout

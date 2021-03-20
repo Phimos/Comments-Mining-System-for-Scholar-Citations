@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 
 def collect_failed_data(metadata_dir: str) -> None:

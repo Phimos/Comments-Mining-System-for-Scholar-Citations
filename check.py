@@ -1,6 +1,7 @@
+import json
+
 from citeminer.crawlers.collector import PaperCollector
 from citeminer.utils.analysis import collect_failed_data
-import json
 
 collector = PaperCollector()
 with open("./configs/basic.json") as infile:
