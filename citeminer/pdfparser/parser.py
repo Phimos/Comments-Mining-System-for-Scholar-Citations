@@ -1,8 +1,8 @@
-from typing import Dict, List
-from .locator import CitationLocator
+from typing import Dict, List, Optional
+
 from .extractor import IndexExtractor
+from .locator import CitationLocator
 from .pdf2txt import extract_text
-from typing import Optional, List
 
 
 class PDFParser(object):
