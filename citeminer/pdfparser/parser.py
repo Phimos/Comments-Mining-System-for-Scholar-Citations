@@ -11,14 +11,17 @@ class PDFParser(object):
         self.extractor = IndexExtractor()
         self.locator = CitationLocator()
 
-    def parse(self, file_path: str, info: Dict) -> Optional[List[str]]:
+    def parse(self, file_path: str, info: Dict) -> List[str]:
         with open(file_path) as f:
             text = f.read()
         text = text.replace("\n", "")
+
         index = self.extractor.extract(text, info["bib"]["title"])
+
         if index:
             print("index find")
             return self.locator.locate_by_index(text, index)
+
         else:
             print("index not find")
             return []

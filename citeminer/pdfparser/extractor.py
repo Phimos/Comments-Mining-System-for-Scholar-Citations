@@ -24,10 +24,8 @@ class IndexExtractor(object):
 
     def extract_dot(self, text: str, title: str) -> Optional[str]:
         words = re.findall(r"\w+", title)
-        # pattern = "\\d+\\.[^\\d]{0,200}" + "\\W*".join(words)
         words = list("".join(words))
         pattern = "\\d+\\.(([^\\d]\\.)|([^\\.]))*" + "\\W*".join(words)
-        # print(pattern)
         result = re.search(pattern, text, re.I | re.U)
         if result:
             citation = result.group()

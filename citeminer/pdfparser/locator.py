@@ -19,7 +19,6 @@ class CitationLocator(object):
 
     def _check_index(self, text: str, index: str) -> bool:
         indices = re.findall("\\d+", text)
-        print(indices)
         if index in indices:
             return True
         elif "-" in text:
@@ -48,7 +47,6 @@ class CitationLocator(object):
         comments = []
         for item in re.finditer(author_pattern, text):
             if self._check_author(item.group(), author, year):
-                print(item.group())
                 comments.append(text[item.start() - 500 : item.end() + 100])
         return comments
 

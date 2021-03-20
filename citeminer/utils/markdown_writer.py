@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from citeminer.types import Author, Publication
 
@@ -222,7 +222,7 @@ class CitingDocument(Markdown):
     def __init__(
         self,
         cited: Union[Publication, str] = "",
-        publications: List[Publication] = [],
+        publications: List[Dict[str, Any]] = [],
         document_path: str = "summary.md",
     ) -> None:
         super().__init__()
@@ -239,11 +239,11 @@ class CitingDocument(Markdown):
             [
                 Header(self.cited_publication, level=1),
                 DoubleLineBreak(),
-                *[CitingPublication(publication=pub) for pub in self.publications],
+                *[CitingPublication(**pub) for pub in self.publications],
             ]
         ).stream
 
-    def add_publication(self, pub: Publication) -> None:
+    def add_publication(self, pub: Dict[str, Any]) -> None:
         self.publications.append(pub)
 
     def save(self) -> None:
