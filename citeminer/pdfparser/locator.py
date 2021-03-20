@@ -2,7 +2,9 @@ import re
 from os import replace
 from typing import List, Optional
 
-sentence_pattern = "[^\\.]*\\."
+sentence_pattern = (
+    "((\\([^\\(\\)]*\\))|(\\[[^\\[\\]]*\\])|(\\d+\\.\\d+)|[^\\(\\)\\[\\]])*\\."
+)
 single_index_pattern = "\\[(\\d+)\\]"
 multi_index_pattern = "\\[[^\\[\\]]*[^\\d](\\d+)[^\\d]+[^\\[\\]]*\\]"
 
@@ -34,7 +36,19 @@ class CitationLocator(object):
         for item in re.finditer(index_pattern, text):
             if self._check_index(item.group(), index):
                 # Todo: replace it with better match algo
-                comments.append(text[item.start() - 500 : item.end() + 100])
+                comment_block = text[item.start() - 500 : item.end() + 500]
+                comment_block = comment_block.replace(
+                    item.group(), "**" + item.group() + "**"
+                )
+                # comment_block = re.search(
+                #    sentence_pattern
+                #    + "((\\([^\\(\\)]*\\))|(\\[[^\\[\\]]*\\])|(\\d+\\.\\d+)|[^\\(\\)\\[\\]])*"
+                #    + item.group().replace("[", "\\[").replace("]", "\\]")
+                #    + sentence_pattern
+                #    + sentence_pattern,
+                #    comment_block,
+                # ).group()
+                comments.append(comment_block)
         return comments
 
     def _check_author(self, text: str, author: str, year: str) -> bool:

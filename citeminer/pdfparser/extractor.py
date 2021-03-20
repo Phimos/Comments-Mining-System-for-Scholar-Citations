@@ -3,8 +3,6 @@ from typing import Optional
 
 from citeminer import debug
 
-sentence_pattern = "((\\([^\\(\\)]*\\))|(\\[[^\\[\\]]*\\])|[^\\(\\)\\[\\]])\\."
-
 
 class IndexExtractor(object):
     def __init__(self) -> None:
