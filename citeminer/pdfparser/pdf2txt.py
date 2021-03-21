@@ -306,9 +306,6 @@ def main(args=None):
             if A.outfile.endswith(override):
                 A.output_type = alttype
 
-    print(vars(A))
-    exit(0)
-
     outfp = extract_text(**vars(A))
     outfp.close()
     return 0

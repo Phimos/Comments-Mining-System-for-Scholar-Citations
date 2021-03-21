@@ -1,4 +1,5 @@
-from __future__ import absolute_import, division, print_function, unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import codecs
 import hashlib
@@ -15,10 +16,8 @@ from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from requests.exceptions import Timeout
 from selenium import webdriver
-from selenium.common.exceptions import (
-    UnexpectedAlertPresentException,
-    WebDriverException,
-)
+from selenium.common.exceptions import (UnexpectedAlertPresentException,
+                                        WebDriverException)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support import expected_conditions
@@ -113,36 +112,36 @@ class Navigator(object, metaclass=Singleton):
                 #    self.logger.info("Got a captcha request.")
                 #    self._session = self.pm._handle_captcha2(pagerequest)
                 #    continue  # Retry request within same session
-                elif resp.status_code == 403:
-                    self.logger.info(f"Got an access denied error (403).")
-                    if not self.pm.has_proxy():
-                        self.logger.info("No other connections possible.")
-                        if not self.got_403:
-                            self.logger.info(
-                                "Retrying immediately with another session."
-                            )
-                        else:
-                            pass
-                            if not self.pm._use_luminati:
-                                w = random.uniform(60, 2 * 60)
-                                self.logger.info(
-                                    "Will retry after {} seconds (with another session).".format(
-                                        w
-                                    )
-                                )
-                                time.sleep(w)
-                        self._new_session()
-                        self.got_403 = True
-                        continue  # Retry request within same session
-                    else:
-                        self.logger.info(
-                            "We can use another connection... let's try that."
-                        )
-                else:
-                    self.logger.info(
-                        f"""Response code {resp.status_code}.
-                                    Retrying..."""
-                    )
+                #elif resp.status_code == 403:
+                #    self.logger.info(f"Got an access denied error (403).")
+                #    if not self.pm.has_proxy():
+                #        self.logger.info("No other connections possible.")
+                #        if not self.got_403:
+                #            self.logger.info(
+                #                "Retrying immediately with another session."
+                #            )
+                #        else:
+                #            pass
+                #            if not self.pm._use_luminati:
+                #                w = random.uniform(60, 2 * 60)
+                #                self.logger.info(
+                #                    "Will retry after {} seconds (with another session).".format(
+                #                        w
+                #                    )
+                #                )
+                #                time.sleep(w)
+                #        self._new_session()
+                #        self.got_403 = True
+                #        continue  # Retry request within same session
+                #    else:
+                #        self.logger.info(
+                #            "We can use another connection... let's try that."
+                #        )
+                #else:
+                #    self.logger.info(
+                #        f"""Response code {resp.status_code}.
+                #                    Retrying..."""
+                #    )
 
             except DOSException:
                 if not self.pm.has_proxy():
