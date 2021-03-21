@@ -57,7 +57,7 @@ class Navigator(object, metaclass=Singleton):
         logging.basicConfig(filename="scholar.log", level=logging.DEBUG)
         self.logger = logging.getLogger("scholarly")
         self._TIMEOUT = 5
-        self._max_retries = 5
+        self._max_retries = 1
         self._session = None
         self.pm = ProxyGenerator()
         self._session = self.pm.get_session()
@@ -109,10 +109,10 @@ class Navigator(object, metaclass=Singleton):
 
                 if resp.status_code == 200 and not has_captcha:
                     return resp.text
-                elif has_captcha:
-                    self.logger.info("Got a captcha request.")
-                    self._session = self.pm._handle_captcha2(pagerequest)
-                    continue  # Retry request within same session
+                # elif has_captcha:
+                #    self.logger.info("Got a captcha request.")
+                #    self._session = self.pm._handle_captcha2(pagerequest)
+                #    continue  # Retry request within same session
                 elif resp.status_code == 403:
                     self.logger.info(f"Got an access denied error (403).")
                     if not self.pm.has_proxy():
