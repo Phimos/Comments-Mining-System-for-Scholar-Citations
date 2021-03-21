@@ -1,12 +1,13 @@
-import unittest
-from .test_base import TestBase
-from ..crawlers.collector import PaperCollector
 import json
+import unittest
+
+from ..crawlers.collector import PaperCollector
+from .test_base import TestBase
 
 
 class TestCollector(TestBase):
     collector = PaperCollector()
-    with open("./configs/basic.json") as infile:
+    with open("./citeminer/configs/basic.json") as infile:
         config = json.load(infile)
     collector.init_from_config(config)
 

@@ -1,10 +1,11 @@
-from crawlers import *
-from utils.markdown_writer import CitingDocument, CitingPublication
-from typing import Optional, List
-from crawlers.scholarly import ProxyGenerator
-import logging
 import json
+import logging
 import os
+from typing import List, Optional
+
+from crawlers import *
+from crawlers.scholarly import ProxyGenerator
+from utils.markdown_writer import CitingDocument, CitingPublication
 
 
 class PaperCollecter(object):
@@ -141,7 +142,7 @@ pc = PaperCollecter()
 pc.collect_by_author("Zhouchen Lin")
 exit(0)
 
-with open("./configs/basic.json") as infile:
+with open("./citeminer/configs/basic.json") as infile:
     config = json.load(infile)
 print(config)
 pc.init_from_config(config)
