@@ -2,6 +2,10 @@ import json
 import os
 from typing import Callable, Optional
 
+from eventlet import Timeout
+
+from citeminer.crawlers import scholar
+from citeminer.crawlers.scholar import ProxyGenerator, scholarly
 from citeminer.pdfparser.pdf2txt import extract_text
 from citeminer.utils.markdown_writer import CitingDocument
 
@@ -89,7 +93,38 @@ def generate_summary(metadata_path: str) -> None:
         pass
 
 
-go_allfiles(metadata_dir, depth=3, postfix=".json", func=generate_summary)
+scholar_crawler = scholarly
+pg = ProxyGenerator()
+pg.SingleProxy(http="http://127.0.0.1:24000", https="http://127.0.0.1:24000")
+scholar_crawler.use_proxy(pg)
+
+
+def fill_info(metadata_path):
+    with open(metadata_path) as f:
+        info = json.load(f)
+    if not info["filled"] and "title" in info["bib"].keys():
+        print(info["bib"]["title"])
+        try:
+            with Timeout(60, False):
+                search_query = scholar_crawler.search_pubs(info["bib"]["title"])
+                fullinfo = scholar_crawler.fill(next(search_query))
+                dict_info = scholar_crawler.get_pprint(fullinfo)
+                with open(metadata_path, "w") as outfile:
+                    json.dump(
+                        dict_info,
+                        outfile,
+                        sort_keys=True,
+                        indent=4,
+                        separators=(",", ":"),
+                    )
+                print(metadata_path, "saved.")
+        except:
+            print("[failed]", metadata_path)
+
+
+go_allfiles(metadata_dir, depth=4, postfix=".json", func=fill_info)
+
+# go_allfiles(metadata_dir, depth=3, postfix=".json", func=generate_summary)
 
 # generate_summary(
 #    "./result/metadata/Yisen Wang/publications/A novel consistent random forest framework- Bernoulli random forests/A novel consistent random forest framework- Bernoulli random forests.json"

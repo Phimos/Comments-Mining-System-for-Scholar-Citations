@@ -179,9 +179,11 @@ class PaperCollector(object):
         self.json_to_pdf(self.metadata_save_dir)
 
     def json_to_pdf(self, path: str) -> None:
+
         if os.path.isdir(path):
             for subpath in os.listdir(path):
                 self.json_to_pdf(os.path.join(path, subpath))
+
         elif os.path.isfile(path):
             with open(path) as infile:
                 info = json.load(infile)
