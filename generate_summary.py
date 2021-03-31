@@ -122,9 +122,9 @@ def fill_info(metadata_path):
             print("[failed]", metadata_path)
 
 
-go_allfiles(metadata_dir, depth=4, postfix=".json", func=fill_info)
+# go_allfiles(metadata_dir, depth=4, postfix=".json", func=fill_info)
 
-# go_allfiles(metadata_dir, depth=3, postfix=".json", func=generate_summary)
+go_allfiles(metadata_dir, depth=3, postfix=".json", func=generate_summary)
 
 # generate_summary(
 #    "./result/metadata/Yisen Wang/publications/A novel consistent random forest framework- Bernoulli random forests/A novel consistent random forest framework- Bernoulli random forests.json"

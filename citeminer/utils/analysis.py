@@ -1,5 +1,13 @@
+#%%
 import json
 import os
+import re
+from collections import Counter
+
+import pandas as pd
+import tableprint as tp
+
+#%%
 
 
 def collect_failed_data(metadata_dir: str) -> None:
@@ -7,16 +15,10 @@ def collect_failed_data(metadata_dir: str) -> None:
     failed_cnt = 0
 
     failed_eprint_cnt = 0
-    failed_nolink_cnt = 0
-    failed_puburl_only_cnt = 0
+    failed_without_eprint_cnt = 0
 
-    ieeeexplore_cnt = 0
-    researchgate_cnt = 0
-    sciencedirect_cnt = 0
-    invalid_cnt = 0
-    others_cnt = 0
-
-    tmp = []
+    eprint_urls = []
+    pub_urls = []
 
     for author in os.listdir(metadata_dir):
         author_path = os.path.join(metadata_dir, author, "publications")
@@ -37,48 +39,114 @@ def collect_failed_data(metadata_dir: str) -> None:
                     failed_cnt += 1
                     if "eprint_url" in info.keys():
                         failed_eprint_cnt += 1
-
-                        if "ieeexplore" in info["eprint_url"]:
-                            ieeeexplore_cnt += 1
-                            # print(info["eprint_url"])
-                        elif "researchgate" in info["eprint_url"]:
-                            researchgate_cnt += 1
-                        elif "sciencedirect" in info["eprint_url"]:
-                            # print(info["eprint_url"])
-                            sciencedirect_cnt += 1
-                        elif "/scholar?" in info["eprint_url"]:
-                            invalid_cnt += 1
-                        else:
-                            # tmp.append(info["eprint_url"])
-                            others_cnt += 1
-
-                    if "eprint_url" not in info.keys() and "pub_url" not in info.keys():
-                        failed_nolink_cnt += 1
-
-                    if "eprint_url" not in info.keys() and "pub_url" in info.keys():
-                        tmp.append(info["pub_url"])
-                        failed_puburl_only_cnt += 1
-
-    # sorted(tmp)
-    # for i in sorted(tmp):
-    #    print(i)
+                        eprint_urls.append(info["eprint_url"])
+                    else:
+                        failed_without_eprint_cnt += 1
+                    pub_urls.append(info["pub_url"])
 
     # report failed info
-    print("=" * 10 + "Failed Reason Analysis" + "=" * 10)
-    print("[Success]: %d" % success_cnt)
-    print("[Failed]: %d" % failed_cnt)
-    print("[Failed Rate]: %.2f%%" % (100 * failed_cnt / (success_cnt + failed_cnt)))
+    status_table = pd.DataFrame(columns=["Status", "Count", "Percentage"])
+    status_table = status_table.append(
+        {
+            "Status": "Success",
+            "Count": success_cnt,
+            "Percentage": "%.2f%%" % (100 * success_cnt / (success_cnt + failed_cnt)),
+        },
+        ignore_index=True,
+    )
+    status_table = status_table.append(
+        {
+            "Status": "Failed",
+            "Count": failed_cnt,
+            "Percentage": "%.2f%%" % (100 * failed_cnt / (success_cnt + failed_cnt)),
+        },
+        ignore_index=True,
+    )
+    status_table = status_table.append(
+        {
+            "Status": "Total",
+            "Count": success_cnt + failed_cnt,
+            "Percentage": "%.2f%%" % (100),
+        },
+        ignore_index=True,
+    )
+    print("Result Status Table".center(88))
+    tp.dataframe(status_table, width=26)
 
-    print("")
+    reason_table = pd.DataFrame(columns=["Contain Eprint URL", "Count", "Percentage"])
+    reason_table = reason_table.append(
+        {
+            "Contain Eprint URL": "Yes",
+            "Count": failed_eprint_cnt,
+            "Percentage": "%.2f%%" % (100 * failed_eprint_cnt / failed_cnt),
+        },
+        ignore_index=True,
+    )
+    reason_table = reason_table.append(
+        {
+            "Contain Eprint URL": "No",
+            "Count": failed_without_eprint_cnt,
+            "Percentage": "%.2f%%" % (100 * failed_without_eprint_cnt / failed_cnt),
+        },
+        ignore_index=True,
+    )
+    reason_table = reason_table.append(
+        {
+            "Contain Eprint URL": "Total",
+            "Count": failed_cnt,
+            "Percentage": "%.2f%%" % (100),
+        },
+        ignore_index=True,
+    )
 
-    print("[Contain Eprint URL]: %.2f%%" % (100 * failed_eprint_cnt / failed_cnt))
-    print("[Only Pub URL]: %.2f%%" % (100 * failed_puburl_only_cnt / failed_cnt))
-    print("[No Link]: %.2f%%" % (100 * failed_nolink_cnt / failed_cnt))
+    print("Eprint-URL Status Table".center(88))
+    tp.dataframe(reason_table, width=26)
 
-    print("")
+    eprint_url_table = count_link(eprint_urls)
+    print("Eprint-URL Domain Table".center(88))
+    tp.dataframe(eprint_url_table, width=26)
 
-    print("[IEEE]: %.2f%%" % (100 * ieeeexplore_cnt / failed_eprint_cnt))
-    print("[ResearchGate]: %.2f%%" % (100 * researchgate_cnt / failed_eprint_cnt))
-    print("[ScienceDirect]: %.2f%%" % (100 * sciencedirect_cnt / failed_eprint_cnt))
-    print("[Invalid]: %.2f%%" % (100 * invalid_cnt / failed_eprint_cnt))
-    print("[Others]: %.2f%%" % (100 * others_cnt / failed_eprint_cnt))
+    pub_url_table = count_link(pub_urls)
+    print("Pub-URL Domain Table".center(88))
+    tp.dataframe(pub_url_table, width=26)
+
+
+#%%
+
+
+def count_link(linkages, drop_percent: float = 5):
+    domains = []
+    for link in linkages:
+        try:
+            domains.append(re.findall("https?://([^/]*)/", link)[0])
+        except:
+            pass
+
+    df = pd.DataFrame(domains, columns=["Domain"])
+    df = df.groupby("Domain").size().reset_index(name="Count")
+    df = df.sort_values(by="Count", ascending=False)
+    df["Percentage"] = df["Count"] / df["Count"].sum() * 100
+    out = df[df["Percentage"] >= drop_percent]
+
+    out = out.append(
+        {
+            "Domain": "Others",
+            "Count": df[df["Percentage"] < drop_percent]["Count"].sum(),
+            "Percentage": df[df["Percentage"] < drop_percent]["Percentage"].sum(),
+        },
+        ignore_index=True,
+    )
+    out = out.append(
+        {
+            "Domain": "Total",
+            "Count": df["Count"].sum(),
+            "Percentage": df["Percentage"].sum(),
+        },
+        ignore_index=True,
+    )
+
+    out["Percentage"] = out["Percentage"].apply(lambda x: "%.2f%%" % x)
+    return out
+
+
+# %%
