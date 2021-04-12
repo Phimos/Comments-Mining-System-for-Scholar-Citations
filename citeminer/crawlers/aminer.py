@@ -16,6 +16,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 timeout = 20
+chromedriver = (
+    "/home/ganyunchong/Comments-Mining-System-for-Scholar-Citations/chromedriver"
+)
+os.environ["webdriver.chrome.driver"] = chromedriver
 
 
 class Author(object):
@@ -93,7 +97,9 @@ class Publication(object):
 
 
 class BaseCrawler(object):
-    def __init__(self, headless=True) -> None:
+    def __init__(
+        self, headless=True, binary_location="/usr/bin/chrome-linux/chrome"
+    ) -> None:
         super().__init__()
 
         if headless:
@@ -104,7 +110,8 @@ class BaseCrawler(object):
             self.chrome_options.add_argument("--disable-setuid-sandbox")
             self.chrome_options.add_argument("--single-process")
             self.chrome_options.add_argument("--window-size=1920,1080")
-            self.driver = webdriver.Chrome(options=self.chrome_options)
+            self.chrome_options.binary_location = binary_location
+            self.driver = webdriver.Chrome(chromedriver, options=self.chrome_options)
         else:
             self.driver = webdriver.Chrome()
 
@@ -153,6 +160,7 @@ class AMinerCrawler(BaseCrawler):
     def __init__(self, headless=True) -> None:
         super().__init__(headless=headless)
 
+    @BaseCrawler.random_sleep()
     def search_publication(self, title: str):
         self.driver.get("https://www.aminer.org/search/pub?q={}".format(title))
 
@@ -172,8 +180,8 @@ class AMinerCrawler(BaseCrawler):
         prev_page = self.driver.find_element_by_xpath("//li[@title='Previous Page']")
 
         first_match.click()
-        self.driver.switch_to_window(self.driver.window_handles[-1])
-        self.driver.current_window_handle
+        current_window = self.driver.current_window_handle
+        self.driver.switch_to.window(self.driver.window_handles[-1])
 
         with open("before.html", "w") as f:
             f.write(self.driver.page_source)
@@ -202,10 +210,13 @@ class AMinerCrawler(BaseCrawler):
             .replace("true", "True")
             .replace("undefined", "None")
         )
+        pprint(info)
         pub = self.build_pub_from_dict(info)
         pprint(pub.dict())
 
-        return pub
+        self.driver.close()
+        self.driver.switch_to.window(current_window)
+        return info
 
     def build_pub_from_dict(self, info: Dict[str, Any]):
         assert "paper" in info.keys()
@@ -218,7 +229,7 @@ class AMinerCrawler(BaseCrawler):
         doi = paper.get("doi")
         pdf_link = paper.get("pdf")
         authors = paper.get("authors")
-        year = paper.get("yaer")
+        year = paper.get("year")
         venue = paper.get("venue")
         keywords = paper.get("keywords")
 
@@ -242,3 +253,11 @@ class AMinerCrawler(BaseCrawler):
 
     def search_author(self, name: str):
         return super().search_author(name)
+
+
+if __name__ == "__main__":
+    aminer = AMinerCrawler()
+    out = aminer.search_publication(
+        "Imbalanced gradients: A new cause of overestimated adversarial robustness"
+    )
+    aminer.driver.quit()
