@@ -1,4 +1,3 @@
-#%%
 import json
 import os
 import re
@@ -6,8 +5,6 @@ from collections import Counter
 
 import pandas as pd
 import tableprint as tp
-
-#%%
 
 
 def collect_failed_data(metadata_dir: str) -> None:
@@ -111,9 +108,6 @@ def collect_failed_data(metadata_dir: str) -> None:
     tp.dataframe(pub_url_table, width=26)
 
 
-#%%
-
-
 def count_link(linkages, drop_percent: float = 5):
     domains = []
     for link in linkages:
@@ -147,6 +141,3 @@ def count_link(linkages, drop_percent: float = 5):
 
     out["Percentage"] = out["Percentage"].apply(lambda x: "%.2f%%" % x)
     return out
-
-
-# %%
