@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import requests
 from citeminer.crawlers.scholar import ProxyGenerator, scholarly
-from citeminer.crawlers.scihub import *
+from citeminer.crawlers.scihub import SciHub
 from citeminer.types import Author, Publication
 from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
 
@@ -37,45 +37,6 @@ class PaperCollector(object):
         self.scholar_crawler.use_proxy(pg)
         self.scihub_crawler.set_proxy("http://127.0.0.1:24000")
 
-    def collect_by_author(self, name: str) -> None:
-        save_dir = os.path.join(self.result_dir, name)
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-
-        author = next(self.scholar_crawler.search_author(name))
-        scholarly.pprint(author)
-        author = self.scholar_crawler.fill(author)
-        for pub in author["publications"]:
-            self.collect_by_publication(pub, name)
-
-    def collect_by_publication(
-        self, publication: Publication, author: str = "John Doe"
-    ) -> None:
-        save_dir = os.path.join(self.result_dir, author, publication["bib"]["title"])
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-
-        cd = CitingDocument(
-            publication, document_path=os.path.join(save_dir, "summary.md")
-        )
-        cnt = 0
-        cpubs = self.scholar_crawler.citedby(publication)
-        for i, val in enumerate(cpubs):
-            pub = self.scholar_crawler.fill(val)
-
-            tmp = self._download_pdf(pub, save_dir)
-            if tmp is None:
-                self.scihub_crawler = SciHub()  # reset
-                print("new type reset!")
-            else:
-                pub["pub_url"] = tmp
-            cd.add_publication(pub)
-            self.scholar_crawler.pprint(pub)
-            cnt = cnt + 1
-            if cnt >= 10:
-                break
-        cd.save()
-
     def _download_pdf(self, publication: Publication, save_dir: str) -> Optional[str]:
         ok = self.scihub_crawler.download(
             publication["pub_url"], save_dir, publication["bib"]["title"] + ".pdf"
@@ -98,8 +59,7 @@ class PaperCollector(object):
             self.collect_metadata_publications(author_info)
 
     def collect_metadata_author_info(self, author):
-        author_info = next(self.scholar_crawler.search_author(author["name"]))
-        author_info = self.scholar_crawler.fill(author_info)
+        author_info = self.get_author_info(author)
         save_dir = os.path.join(self.metadata_save_dir, author_info["name"])
         os.makedirs(save_dir, exist_ok=True)
         with open(os.path.join(save_dir, "author_info.json"), "w") as outfile:
