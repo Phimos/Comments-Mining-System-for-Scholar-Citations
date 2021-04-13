@@ -7,11 +7,10 @@ import time
 from typing import Any, Dict, List, Optional, Union
 
 import requests
+from citeminer.crawlers.scholar import ProxyGenerator, scholarly
+from citeminer.crawlers.scihub import *
 from citeminer.types import Author, Publication
 from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
-
-from ..scholar import ProxyGenerator, scholarly
-from ..scihub import *
 
 
 class PaperCollector(object):
