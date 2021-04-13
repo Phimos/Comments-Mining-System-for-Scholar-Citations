@@ -1,3 +1,4 @@
+#%%
 import json
 import os
 from typing import Callable, Optional
@@ -10,6 +11,7 @@ from citeminer.pdfparser.pdf2txt import extract_text
 from citeminer.utils.markdown_writer import CitingDocument
 
 metadata_dir = "./result/metadata"
+aminer_info_dir = "./result/aminer"
 pdfs_dir = "./result/pdfs"
 txts_dir = "./result/txts"
 
@@ -62,6 +64,26 @@ def generate_summary(metadata_path: str) -> None:
         with open(os.path.join(cited_dir, metadata)) as f:
             pub = json.load(f)
 
+        if not pub["filled"] and os.path.exists(
+            os.path.join(cited_dir, metadata).replace(metadata_dir, aminer_info_dir)
+        ):
+            with open(
+                os.path.join(cited_dir, metadata).replace(metadata_dir, aminer_info_dir)
+            ) as f:
+                aminer_info = json.load(f)
+            if (
+                fuzz.token_set_ratio(
+                    pub["bib"]["title"].lower(), aminer_info["paper"]["title"].lower()
+                )
+                >= 85
+            ) and "authors" in aminer_info["paper"].keys():
+                print(pub["bib"]["author"])
+                pub["bib"]["author"] = [
+                    a["name"] for a in aminer_info["paper"]["authors"]
+                ]
+                print(pub["bib"]["author"])
+                print()
+
         pdf_path = (
             os.path.join(cited_dir, metadata)
             .replace(metadata_dir, pdfs_dir)
@@ -71,7 +93,7 @@ def generate_summary(metadata_path: str) -> None:
         if os.path.exists(pdf_path):
             pub["pub_url"] = os.path.abspath(pdf_path)
 
-        print(os.path.join(cited_dir, metadata))
+        # print(os.path.join(cited_dir, metadata))
         txt_path = (
             os.path.join(cited_dir, metadata)
             .replace(metadata_dir, txts_dir)
@@ -82,7 +104,8 @@ def generate_summary(metadata_path: str) -> None:
         if os.path.exists(txt_path):
             comments = parser.parse(txt_path, cited_pub)
         else:
-            print("txt not exists")
+            # print("txt not exists")
+            pass
 
         pubs.append({"publication": pub, "comments": comments})
         # pubs.append({"publication": pub})
@@ -122,9 +145,84 @@ def fill_info(metadata_path):
             print("[failed]", metadata_path)
 
 
+from citeminer.crawlers.aminer import AMinerCrawler
+
+
+def aminer_info(metadata_path):
+    with open(metadata_path) as f:
+        info = json.load(f)
+    title = info["bib"]["title"]
+    try:
+        aminer_path = metadata_path.replace(metadata_dir, aminer_info_dir)
+        if os.path.exists(aminer_path):
+            return
+        aminer = AMinerCrawler()
+        out = aminer.search_publication(title)
+        aminer.driver.quit()
+        pardir, _ = os.path.split(aminer_path)
+        os.makedirs(pardir, exist_ok=True)
+        with open(metadata_path.replace(metadata_dir, aminer_info_dir), "w") as outfile:
+            json.dump(out, outfile, indent=2)
+    except:
+        pass
+
+
+# cnt = 0
+# ncnt = 0
+#
+#
+# def count_aminer(metadata_path):
+#    global cnt
+#    global ncnt
+#    aminer_path = metadata_path.replace(metadata_dir, aminer_info_dir)
+#    if os.path.exists(aminer_path):
+#        cnt += 1
+#    else:
+#        ncnt += 1
+#
+#
+# go_allfiles(metadata_dir, depth=4, postfix=".json", func=count_aminer)
+# print(cnt, ncnt)
+
+
+import matplotlib.pyplot as plt
+from fuzzywuzzy import fuzz
+
+rs = []
+
+
+def find_unmatched_pair(metadata_path):
+    global rs
+    with open(metadata_path) as f:
+        ori_info = json.load(f)
+    ori_title = ori_info["bib"]["title"]
+    aminer_path = metadata_path.replace(metadata_dir, aminer_info_dir)
+    if not os.path.exists(aminer_path):
+        return
+    with open(aminer_path) as f:
+        aminer_info = json.load(f)
+    aminer_title = aminer_info["paper"]["title"]
+    r = fuzz.token_set_ratio(ori_title.lower(), aminer_title.lower())
+    rs.append((r, metadata_path))
+
+
+# go_allfiles(metadata_dir, depth=4, postfix=".json", func=find_unmatched_pair)
+
+
+#%%
+# rs.sort(key=lambda x: x[0])
+# [a for a in rs if a[0] < 90][-10:]
+#%%
+
+# plt.hist([a[0] for a in rs])
+
 # go_allfiles(metadata_dir, depth=4, postfix=".json", func=fill_info)
 
+#%%
+
 go_allfiles(metadata_dir, depth=3, postfix=".json", func=generate_summary)
+
+# go_allfiles(metadata_dir, depth=4, postfix=".json", func=aminer_info)
 
 # generate_summary(
 #    "./result/metadata/Yisen Wang/publications/A novel consistent random forest framework- Bernoulli random forests/A novel consistent random forest framework- Bernoulli random forests.json"
@@ -134,3 +232,40 @@ go_allfiles(metadata_dir, depth=3, postfix=".json", func=generate_summary)
 #    "./result/metadata/Zhouchen Lin/publications/Towards understanding adversarial examples systematically- Exploring data size, task and model factors/Towards understanding adversarial examples systematically- Exploring data size, task and model factors.json"
 # )
 # go_allfiles(pdfs_dir, depth=4, postfix=".pdf", func=convert2txt)
+
+
+# def test_single_file(metadata_path, cited_dir, metadata):
+#
+#    with open(metadata_path) as f:
+#        cited_pub = json.load(f)
+#
+#    with open(os.path.join(cited_dir, metadata)) as f:
+#        pub = json.load(f)
+#
+#        pdf_path = (
+#            os.path.join(cited_dir, metadata)
+#            .replace(metadata_dir, pdfs_dir)
+#            .replace(".json", ".pdf")
+#        )
+#
+#        if os.path.exists(pdf_path):
+#            pub["pub_url"] = os.path.abspath(pdf_path)
+#
+#        # print(os.path.join(cited_dir, metadata))
+#        txt_path = (
+#            os.path.join(cited_dir, metadata)
+#            .replace(metadata_dir, txts_dir)
+#            .replace(".json", ".txt")
+#        )
+#
+#        comments = []
+#        if os.path.exists(txt_path):
+#            comments = parser.parse(txt_path, cited_pub)
+#        else:
+#            # print("txt not exists")
+#            pass
+#
+#
+# test_single_file("meta.json", ".", "asdf.json")
+
+# %%
