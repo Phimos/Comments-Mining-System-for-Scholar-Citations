@@ -302,3 +302,34 @@ class PaperCollector(object):
         self.metadata_save_dir = config["metadata_save_dir"]
         self.pdf_save_dir = config["pdf_save_dir"]
         self.authors = config["authors"]
+
+    def get_author_info(self, author: Dict[str, Any]) -> None:
+        def contain_other_info(author: Dict[str, Any]) -> bool:
+            for k in author.keys():
+                if k in ["name", "publications"]:
+                    continue
+                else:
+                    return True
+            return False
+
+        def check_same(result: Author, author: Dict[str, Any]) -> bool:
+            for k in author.keys():
+                if k in ["name", "publications"]:
+                    continue
+                elif result[k] != author[k]:
+                    return False
+                else:
+                    pass
+            return True
+
+        assert "name" in author.keys()
+
+        if contain_other_info(author):
+            for result in self.scholar_crawler.search_author(author["name"]):
+                if check_same(result, author):
+                    return self.scholar_crawler.fill(result)
+
+        else:
+            result = next(self.scholar_crawler.search_author(author["name"]))
+            result = self.scholar_crawler.fill(result)
+            return result
