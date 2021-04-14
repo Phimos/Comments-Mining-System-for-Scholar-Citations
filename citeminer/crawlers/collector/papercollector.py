@@ -10,7 +10,6 @@ import requests
 from citeminer.crawlers.scholar import ProxyGenerator, scholarly
 from citeminer.crawlers.scihub import SciHub
 from citeminer.types import Author, Publication
-from citeminer.utils import go_allfiles
 from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
 
 
@@ -54,14 +53,14 @@ class PaperCollector(object):
         return newname
 
     def collect_metadata(self) -> None:
-        os.makedirs(self.metadata_save_dir, exist_ok=True)
+        os.makedirs(self.metadata_dir, exist_ok=True)
         for author in self.authors:
             author_info = self.collect_metadata_author_info(author)
             self.collect_metadata_publications(author_info)
 
     def collect_metadata_author_info(self, author):
         author_info = self.get_author_info(author)
-        save_dir = os.path.join(self.metadata_save_dir, author_info["name"])
+        save_dir = os.path.join(self.metadata_dir, author_info["name"])
         os.makedirs(save_dir, exist_ok=True)
         with open(os.path.join(save_dir, "author_info.json"), "w") as outfile:
             dict_author_info = self.scholar_crawler.get_pprint(author_info)
@@ -93,9 +92,7 @@ class PaperCollector(object):
             print(path, "saved.")
 
     def collect_metadata_publications(self, author_info) -> None:
-        save_dir = os.path.join(
-            self.metadata_save_dir, author_info["name"], "publications"
-        )
+        save_dir = os.path.join(self.metadata_dir, author_info["name"], "publications")
         os.makedirs(save_dir, exist_ok=True)
         for pub in author_info["publications"]:
             pub_dir = self.filename(pub["bib"]["title"])
@@ -138,7 +135,7 @@ class PaperCollector(object):
     def collect_pdf_files(self) -> None:
         self.authors
 
-        self.json_to_pdf(self.metadata_save_dir)
+        self.json_to_pdf(self.metadata_dir)
 
     def json_to_pdf(self, path: str) -> None:
 
@@ -160,7 +157,7 @@ class PaperCollector(object):
                         pass
 
                 pdf_path = path
-                pdf_path = pdf_path.replace(self.metadata_save_dir, self.pdf_save_dir)
+                pdf_path = pdf_path.replace(self.metadata_dir, self.pdf_dir)
                 pdf_path = pdf_path.replace(".json", ".pdf")
 
                 pardir, _ = os.path.split(pdf_path)
@@ -239,7 +236,7 @@ class PaperCollector(object):
                 else:
                     self.undefined += 1
 
-        check_pdf(self.metadata_save_dir)
+        check_pdf(self.metadata_dir)
         print("[All document]:", self.success + self.failed + self.undefined)
         print("[Finished]:", self.success + self.failed)
         print("[Success]:", self.success)
@@ -274,8 +271,6 @@ class PaperCollector(object):
         self.txt_dir = os.path.join(self.result_dir, txt_dir)
         self.aminer_dir = os.path.join(self.result_dir, aminer_dir)
 
-        self.metadata_save_dir = config["metadata_save_dir"]
-        self.pdf_save_dir = config["pdf_save_dir"]
         self.authors = config["authors"]
 
     def get_author_info(self, author: Dict[str, Any]) -> None:
