@@ -109,10 +109,8 @@ def generate_tasks(
     return tasks
 
 
-def convert2txt(task: Tuple) -> None:
+def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
     author, pub, cpub = task
-    pdf_dir = ""
-    txt_dir = ""
 
     pdf_path = os.path.join(
         pdf_dir, author, "publications", pub, "cited", cpub + ".pdf"
@@ -131,3 +129,15 @@ def convert2txt(task: Tuple) -> None:
         extract_text(files=[pdf_path], outfile=txt_path)
     except:
         pass
+
+
+def generate_summary(task: Tuple) -> None:
+    pass
+
+
+def fill_pub_info(task: Tuple) -> None:
+    pass
+
+
+def download_pdf(task: Tuple) -> None:
+    pass
