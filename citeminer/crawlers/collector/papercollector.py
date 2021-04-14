@@ -117,76 +117,6 @@ class PaperCollector(object):
             dump_json(dict_info, path)
             print(path, "saved.")
 
-    def collect_pdf_files(self) -> None:
-        self.authors
-
-        self.json_to_pdf(self.metadata_dir)
-
-    def json_to_pdf(self, path: str) -> None:
-
-        if os.path.isdir(path):
-            for subpath in os.listdir(path):
-                self.json_to_pdf(os.path.join(path, subpath))
-
-        elif os.path.isfile(path):
-            with open(path) as infile:
-                info = json.load(infile)
-
-            if "pub_url" in info.keys():
-                if "saved" in info.keys():
-                    if info["saved"] == "success":
-                        print("[&success]:", info["bib"]["title"])
-                        return
-                    else:
-                        print("[&failed]:", info["bib"]["title"])
-                        pass
-
-                pdf_path = path
-                pdf_path = pdf_path.replace(self.metadata_dir, self.pdf_dir)
-                pdf_path = pdf_path.replace(".json", ".pdf")
-
-                pardir, _ = os.path.split(pdf_path)
-                os.makedirs(pardir, exist_ok=True)
-
-                if "eprint_url" in info.keys():
-                    ok = self.simple_download(info["eprint_url"], path=pdf_path)
-                    if not ok:
-                        ok = self.scihub_crawler.download(
-                            info["pub_url"], path=pdf_path
-                        )
-                else:
-                    ok = self.scihub_crawler.download(info["pub_url"], path=pdf_path)
-                if ok:
-                    info["saved"] = "success"
-                    print("[success]:", info["bib"]["title"])
-                else:
-                    info["saved"] = "failed"
-                    print("[failed]:", info["bib"]["title"])
-
-                dump_json(info, path)
-                if random.random() < 0.05:  # long sleep
-                    # time.sleep(random.uniform(60, 300))
-                    pass
-                else:  # short sleep
-                    time.sleep(random.uniform(1, 2))
-
-    def simple_download(self, url, path):
-        print("Simple download:", url)
-        try:
-            res = requests.get(url)
-            if (
-                "application/pdf" in res.headers["Content-Type"]
-                or "application/octet-stream" in res.headers["Content-Type"]
-                or "application/x-download" in res.headers["Content-Type"]
-            ):
-                with open(path, "wb") as f:
-                    f.write(res.content)
-                return True
-            else:
-                return False
-        except:
-            return False
-
     def webdriver_download(self, url, path):
         print("Webdriver download:", url)
 
@@ -228,8 +158,6 @@ class PaperCollector(object):
     def collect(self, config: Dict[str, Any]) -> None:
         self.init_from_config(config)
         self.collect_metadata()
-        self.collect_pdf_files()
-        pass
 
     def collect_pdfs(self) -> None:
         tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
