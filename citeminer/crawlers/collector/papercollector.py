@@ -10,6 +10,7 @@ import requests
 from citeminer.crawlers.scholar import ProxyGenerator, scholarly
 from citeminer.crawlers.scihub import SciHub
 from citeminer.types import Author, Publication
+from citeminer.utils import go_allfiles
 from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
 
 
@@ -52,7 +53,7 @@ class PaperCollector(object):
         newname = re.sub('[\/:*?"<>|]', "-", name)
         return newname
 
-    def collect_metadata(self):
+    def collect_metadata(self) -> None:
         os.makedirs(self.metadata_save_dir, exist_ok=True)
         for author in self.authors:
             author_info = self.collect_metadata_author_info(author)
@@ -135,6 +136,8 @@ class PaperCollector(object):
                 )
 
     def collect_pdf_files(self) -> None:
+        self.authors
+
         self.json_to_pdf(self.metadata_save_dir)
 
     def json_to_pdf(self, path: str) -> None:
@@ -258,7 +261,19 @@ class PaperCollector(object):
         pass
 
     def init_from_config(self, config: Dict[str, Any]) -> None:
-        self.timeout = config["timeout"]
+        self.timeout = config.get("timeout", 20)
+        result_dir = config.get("result_dir", "result")
+        metadata_dir = config.get("metadata_dir", "metadata")
+        pdf_dir = config.get("pdf_dir", "pdfs")
+        txt_dir = config.get("txt_dir", "txts")
+        aminer_dir = config.get("aminer_dir", "aminer")
+
+        self.result_dir = os.path.join(".", result_dir)
+        self.metadata_dir = os.path.join(self.result_dir, metadata_dir)
+        self.pdf_dir = os.path.join(self.result_dir, pdf_dir)
+        self.txt_dir = os.path.join(self.result_dir, txt_dir)
+        self.aminer_dir = os.path.join(self.result_dir, aminer_dir)
+
         self.metadata_save_dir = config["metadata_save_dir"]
         self.pdf_save_dir = config["pdf_save_dir"]
         self.authors = config["authors"]
