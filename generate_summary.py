@@ -214,66 +214,8 @@ def find_unmatched_pair(metadata_path):
     rs.append((r, metadata_path))
 
 
-# go_allfiles(metadata_dir, depth=4, postfix=".json", func=find_unmatched_pair)
+go_allfiles(pdfs_dir, depth=4, postfix=".pdf", func=convert2txt)
 
-
-#%%
-# rs.sort(key=lambda x: x[0])
-# [a for a in rs if a[0] < 90][-10:]
-#%%
-
-# plt.hist([a[0] for a in rs])
-
-# go_allfiles(metadata_dir, depth=4, postfix=".json", func=fill_info)
-
-#%%
+go_allfiles(metadata_dir, depth=4, postfix=".json", func=aminer_info)
 
 go_allfiles(metadata_dir, depth=3, postfix=".json", func=generate_summary)
-
-# go_allfiles(metadata_dir, depth=4, postfix=".json", func=aminer_info)
-
-# generate_summary(
-#    "./result/metadata/Yisen Wang/publications/A novel consistent random forest framework- Bernoulli random forests/A novel consistent random forest framework- Bernoulli random forests.json"
-# )
-#
-# generate_summary(
-#    "./result/metadata/Zhouchen Lin/publications/Towards understanding adversarial examples systematically- Exploring data size, task and model factors/Towards understanding adversarial examples systematically- Exploring data size, task and model factors.json"
-# )
-# go_allfiles(pdfs_dir, depth=4, postfix=".pdf", func=convert2txt)
-
-
-# def test_single_file(metadata_path, cited_dir, metadata):
-#
-#    with open(metadata_path) as f:
-#        cited_pub = json.load(f)
-#
-#    with open(os.path.join(cited_dir, metadata)) as f:
-#        pub = json.load(f)
-#
-#        pdf_path = (
-#            os.path.join(cited_dir, metadata)
-#            .replace(metadata_dir, pdfs_dir)
-#            .replace(".json", ".pdf")
-#        )
-#
-#        if os.path.exists(pdf_path):
-#            pub["pub_url"] = os.path.abspath(pdf_path)
-#
-#        # print(os.path.join(cited_dir, metadata))
-#        txt_path = (
-#            os.path.join(cited_dir, metadata)
-#            .replace(metadata_dir, txts_dir)
-#            .replace(".json", ".txt")
-#        )
-#
-#        comments = []
-#        if os.path.exists(txt_path):
-#            comments = parser.parse(txt_path, cited_pub)
-#        else:
-#            # print("txt not exists")
-#            pass
-#
-#
-# test_single_file("meta.json", ".", "asdf.json")
-
-# %%
