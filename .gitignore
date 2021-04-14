@@ -139,3 +139,5 @@ result/
 .vscode/
 
 /*.json
+
+test.py
