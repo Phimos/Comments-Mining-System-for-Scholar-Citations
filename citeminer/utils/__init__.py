@@ -110,6 +110,9 @@ def generate_tasks(
 
 
 def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
+    """
+    cpub level task
+    """
     author, pub, cpub = task
 
     pdf_path = os.path.join(
@@ -132,12 +135,21 @@ def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
 
 
 def generate_summary(task: Tuple) -> None:
+    """
+    pub level task
+    """
     pass
 
 
 def fill_pub_info(task: Tuple) -> None:
+    """
+    cpub level task
+    """
     pass
 
 
 def download_pdf(task: Tuple) -> None:
+    """
+    cpub level task
+    """
     pass
