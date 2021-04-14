@@ -1,0 +1,14 @@
+{
+    "timeout": 20,
+    "result_dir": "result",
+    "metadata_dir": "metadata",
+    "pdf_dir": "pdfs",
+    "txt_dir": "txts",
+    "aminer_dir": "aminer",
+    "authors":[
+        {
+            "name": "Bingxuan Wang",
+            "email_domain": "@pku.edu.cn"
+        }
+    ]
+}
