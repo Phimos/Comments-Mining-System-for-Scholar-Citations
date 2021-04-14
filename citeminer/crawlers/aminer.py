@@ -160,7 +160,7 @@ class AMinerCrawler(BaseCrawler):
     def __init__(self, headless=True) -> None:
         super().__init__(headless=headless)
 
-    @BaseCrawler.random_sleep()
+    @BaseCrawler.random_sleep(min=2, max=5)
     def search_publication(self, title: str):
         self.driver.get("https://www.aminer.org/search/pub?q={}".format(title))
 
@@ -183,9 +183,6 @@ class AMinerCrawler(BaseCrawler):
         current_window = self.driver.current_window_handle
         self.driver.switch_to.window(self.driver.window_handles[-1])
 
-        with open("before.html", "w") as f:
-            f.write(self.driver.page_source)
-
         try:
             element_present = EC.presence_of_element_located(
                 (By.CLASS_NAME, "titleline")
@@ -195,9 +192,6 @@ class AMinerCrawler(BaseCrawler):
             print("Timed out waiting for page to load")
         finally:
             print("Page loaded")
-
-        with open("after.html", "w") as f:
-            f.write(self.driver.page_source)
 
         # find meta info in page source code
         pattern = re.compile(
