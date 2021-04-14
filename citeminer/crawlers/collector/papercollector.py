@@ -10,8 +10,9 @@ from typing import Any, Dict, List, Optional, Union
 import requests
 from citeminer.crawlers.scholar import ProxyGenerator, scholarly
 from citeminer.crawlers.scihub import SciHub
+from citeminer.pdfparser.parser import PDFParser
 from citeminer.types import Author, Publication
-from citeminer.utils import download_pdf, dump_json, generate_tasks
+from citeminer.utils import download_pdf, dump_json, generate_summary, generate_tasks
 from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
 
 
@@ -168,6 +169,24 @@ class PaperCollector(object):
                     metadata_dir=self.metadata_dir,
                     pdf_dir=self.pdf_dir,
                     scihub_crawler=self.scihub_crawler,
+                ),
+                tasks,
+            )
+        )
+
+    def create_summaries(self) -> None:
+        tasks = generate_tasks(
+            self.metadata_dir, task_type="pub", user_guide_info=self.authors
+        )
+        list(
+            map(
+                partial(
+                    generate_summary,
+                    metadata_dir=self.metadata_dir,
+                    pdf_dir=self.pdf_dir,
+                    aminer_dir=self.aminer_dir,
+                    txt_dir=self.txt_dir,
+                    parser=PDFParser(),
                 ),
                 tasks,
             )
