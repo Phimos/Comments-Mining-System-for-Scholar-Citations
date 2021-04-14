@@ -4,6 +4,7 @@ from copy import deepcopy
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
+import requests
 from citeminer.pdfparser.pdf2txt import extract_text
 from fuzzywuzzy import fuzz, process
 
@@ -109,22 +110,20 @@ def generate_tasks(
     return tasks
 
 
+def get_cpub_path(root_dir: str, author: str, pub: str, cpub: str, postfix: str) -> str:
+    return os.path.join(root_dir, author, "publications", pub, "cited", cpub + postfix)
+
+
 def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
     """
     cpub level task
     """
     author, pub, cpub = task
 
-    pdf_path = os.path.join(
-        pdf_dir, author, "publications", pub, "cited", cpub + ".pdf"
-    )
-    txt_path = os.path.join(
-        txt_dir, author, "publications", pub, "cited", cpub + ".txt"
-    )
+    pdf_path = get_cpub_path(pdf_dir, author, pub, cpub, ".pdf")
+    txt_path = get_cpub_path(txt_dir, author, pub, cpub, ".txt")
 
-    if not os.path.exists(pdf_path):
-        return
-    if os.path.exists(txt_path):
+    if not os.path.exists(pdf_path) or os.path.exists(txt_path):
         return
 
     try:
@@ -148,8 +147,57 @@ def fill_pub_info(task: Tuple) -> None:
     pass
 
 
-def download_pdf(task: Tuple) -> None:
+def simple_download(url, path):
+    try:
+        res = requests.get(url)
+        if (
+            "application/pdf" in res.headers["Content-Type"]
+            or "application/octet-stream" in res.headers["Content-Type"]
+            or "application/x-download" in res.headers["Content-Type"]
+        ):
+            with open(path, "wb") as f:
+                f.write(res.content)
+            return True
+        else:
+            return False
+    except:
+        return False
+
+
+def scihub_download(scihub_crawler, url, path):
+    return scihub_crawler.download(url, path=path)
+
+
+def download_pdf(task: Tuple, metadata_dir: str, pdf_dir: str, scihub_crawler) -> None:
     """
     cpub level task
     """
-    pass
+    author, pub, cpub = task
+
+    json_path = get_cpub_path(metadata_dir, author, pub, cpub, ".json")
+    pdf_path = get_cpub_path(pdf_dir, author, pub, cpub, ".pdf")
+
+    os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+
+    info = load_json(json_path)
+    if "pub_url" in info.keys():
+        if "saved" in info.keys():
+            if info["saved"] == "success":
+                print("[&success]:", info["bib"]["title"])
+                return
+            else:
+                print("[&failed]:", info["bib"]["title"])
+                pass
+
+        ok = False
+        if "eprint_url" in info.keys():
+            ok = simple_download(info["eprint_url"], path=pdf_path)
+
+        if not ok:
+            ok = scihub_download(scihub_crawler, info["pub_url"], path=pdf_path)
+
+        status = "success" if ok else "failed"
+        info["saved"] = status
+        print("[%s]: %s" % (status, info["bib"]["title"]))
+
+        dump_json(info, json_path)
