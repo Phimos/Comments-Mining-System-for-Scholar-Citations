@@ -32,11 +32,11 @@ def fuzzy_extract_one(
         return False, ""
 
 
-def search_metadata_dir(metadata_dir: str) -> Dict[str, Any]:
+def search_metadata_dir(root_dir: str) -> Dict[str, Any]:
     result: Dict = {}
-    for author in os.listdir(metadata_dir):
+    for author in os.listdir(root_dir):
         result[author] = {}
-        pub_dir = os.path.join(metadata_dir, author, "publications")
+        pub_dir = os.path.join(root_dir, author, "publications")
         for pub in os.listdir(pub_dir):
             result[author][pub] = []
             cpub_dir = os.path.join(pub_dir, pub, "cited")
