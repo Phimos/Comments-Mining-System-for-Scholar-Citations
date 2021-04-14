@@ -66,15 +66,6 @@ class PaperCollector(object):
         dump_json(dict_author_info, os.path.join(save_dir, "author_info.json"))
         return author_info
 
-    def save_scholar_json(self, info: Union[Author, Publication], path: str):
-        if os.path.exists(path):
-            print(path, "already exists")
-            return
-        else:
-            dict_info = self.scholar_crawler.get_pprint(info)
-            dump_json(dict_info, path)
-            print(path, "saved.")
-
     def collect_metadata_publications(self, author_info) -> None:
         save_dir = os.path.join(self.metadata_dir, author_info["name"], "publications")
         os.makedirs(save_dir, exist_ok=True)
@@ -115,6 +106,15 @@ class PaperCollector(object):
                         "%s.json" % self.filename(full_pub["bib"]["title"]),
                     ),
                 )
+
+    def save_scholar_json(self, info: Union[Author, Publication], path: str):
+        if os.path.exists(path):
+            print(path, "already exists")
+            return
+        else:
+            dict_info = self.scholar_crawler.get_pprint(info)
+            dump_json(dict_info, path)
+            print(path, "saved.")
 
     def collect_pdf_files(self) -> None:
         self.authors
@@ -178,11 +178,8 @@ class PaperCollector(object):
                 or "application/octet-stream" in res.headers["Content-Type"]
                 or "application/x-download" in res.headers["Content-Type"]
             ):
-                try:
-                    with open(path, "wb") as f:
-                        f.write(res.content)
-                except:
-                    pass
+                with open(path, "wb") as f:
+                    f.write(res.content)
                 return True
             else:
                 return False
