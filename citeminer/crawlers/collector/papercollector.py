@@ -10,6 +10,7 @@ import requests
 from citeminer.crawlers.scholar import ProxyGenerator, scholarly
 from citeminer.crawlers.scihub import SciHub
 from citeminer.types import Author, Publication
+from citeminer.utils import dump_json
 from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
 
 
@@ -61,16 +62,8 @@ class PaperCollector(object):
     def collect_metadata_author_info(self, author):
         author_info = self.get_author_info(author)
         save_dir = os.path.join(self.metadata_dir, author_info["name"])
-        os.makedirs(save_dir, exist_ok=True)
-        with open(os.path.join(save_dir, "author_info.json"), "w") as outfile:
-            dict_author_info = self.scholar_crawler.get_pprint(author_info)
-            json.dump(
-                dict_author_info,
-                outfile,
-                sort_keys=True,
-                indent=4,
-                separators=(",", ":"),
-            )
+        dict_author_info = self.scholar_crawler.get_pprint(author_info)
+        dump_json(dict_author_info, os.path.join(save_dir, "author_info.json"))
         return author_info
 
     def save_scholar_json(self, info: Union[Author, Publication], path: str):
@@ -78,17 +71,8 @@ class PaperCollector(object):
             print(path, "already exists")
             return
         else:
-            pardir, filename = os.path.split(path)
-            os.makedirs(pardir, exist_ok=True)
             dict_info = self.scholar_crawler.get_pprint(info)
-            with open(path, "w") as outfile:
-                json.dump(
-                    dict_info,
-                    outfile,
-                    sort_keys=True,
-                    indent=4,
-                    separators=(",", ":"),
-                )
+            dump_json(dict_info, path)
             print(path, "saved.")
 
     def collect_metadata_publications(self, author_info) -> None:
@@ -178,15 +162,7 @@ class PaperCollector(object):
                     info["saved"] = "failed"
                     print("[failed]:", info["bib"]["title"])
 
-                with open(path, "w") as outfile:
-                    json.dump(
-                        info,
-                        outfile,
-                        sort_keys=True,
-                        indent=4,
-                        separators=(",", ":"),
-                    )
-
+                dump_json(info, path)
                 if random.random() < 0.05:  # long sleep
                     # time.sleep(random.uniform(60, 300))
                     pass
