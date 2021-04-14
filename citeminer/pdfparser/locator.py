@@ -31,6 +31,26 @@ class CitationLocator(object):
         else:
             return False
 
+    def split_sentences(self, block):
+        sentence_pattern = "[^\.]*\."
+        result = []
+        for i, s in enumerate(re.findall(sentence_pattern, block)):
+            if i == 0:
+                result.append(s)
+                continue
+
+            if s[0] == "," or not " " in s.strip():
+                result[-1] = result[-1] + s
+            else:
+                result.append(s)
+
+        result = result[1:]
+        result = [s.strip() for s in result]
+        return result
+
+    def clean_comment_block(self, comment_block):
+        return " ".join(self.split_sentences(comment_block))
+
     def locate_by_index(self, text: str, index: str) -> List[str]:
         comments = []
         for item in re.finditer(index_pattern, text):
@@ -48,7 +68,8 @@ class CitationLocator(object):
                 #    + sentence_pattern,
                 #    comment_block,
                 # ).group()
-                comments.append(comment_block)
+                clean_block = self.clean_comment_block(comment_block)
+                comments.append(clean_block)
         return comments
 
     def _check_author(self, text: str, author: str, year: str) -> bool:
