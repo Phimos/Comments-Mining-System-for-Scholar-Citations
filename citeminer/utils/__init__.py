@@ -41,9 +41,8 @@ def search_metadata_dir(metadata_dir: str) -> Dict[str, Any]:
             result[author][pub] = []
             cpub_dir = os.path.join(pub_dir, pub, "cited")
             for cpub in os.listdir(cpub_dir):
-                if cpub.endswith(".json"):
-                    cpub = cpub[:-5]
-                    result[author][pub].append(cpub)
+                cpub, *_ = os.path.splitext(cpub)
+                result[author][pub].append(cpub)
     return result
 
 
@@ -67,9 +66,8 @@ def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
             for pub in os.listdir(pub_dir):
                 cpub_dir = os.path.join(pub_dir, pub, "cited")
                 for cpub in os.listdir(cpub_dir):
-                    if cpub.endswith(".json"):
-                        cpub = cpub[:-5]
-                        tasks.append((author, pub, cpub))
+                    cpub, *_ = os.path.splitext(cpub)
+                    tasks.append((author, pub, cpub))
 
     else:
         raise ValueError
