@@ -46,7 +46,11 @@ def search_metadata_dir(root_dir: str) -> Dict[str, Dict[str, List]]:
     return result
 
 
-def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
+def generate_tasks(
+    root_dir: str,
+    task_type: str = "cpub",
+    user_guide_info: Optional[List] = None,
+) -> List[Any]:
     tasks: List[Any] = []
     data = search_metadata_dir(root_dir)
 
