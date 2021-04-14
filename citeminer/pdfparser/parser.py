@@ -14,7 +14,7 @@ class PDFParser(object):
     def parse(self, file_path: str, info: Dict) -> List[str]:
         with open(file_path) as f:
             text = f.read()
-        text = text.replace("\n", "")
+        text = text.replace("\n", " ")
 
         index = self.extractor.extract(text, info["bib"]["title"])
 
