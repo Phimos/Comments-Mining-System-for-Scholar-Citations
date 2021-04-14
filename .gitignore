@@ -133,6 +133,7 @@ dmypy.json
 *.pdf
 *.txt
 result/
+result_test/
 
 # MacOS
 **/.DS_Store
