@@ -1,25 +1,9 @@
 import json
 import os
+from functools import partial
 from typing import Any, Callable, List, Optional, Tuple
 
 from citeminer.pdfparser.pdf2txt import extract_text
-
-
-def go_allfiles(
-    root: str,
-    depth: int = -1,
-    postfix: Optional[str] = None,
-    func: Callable = lambda x: print(x),
-) -> None:
-    for subdir in os.listdir(root):
-        if os.path.isdir(os.path.join(root, subdir)):
-            if depth == 0:
-                return
-            else:
-                go_allfiles(os.path.join(root, subdir), depth - 1, postfix, func)
-        else:
-            if (postfix is None or subdir.endswith(postfix)) and (depth <= 0):
-                func(os.path.join(root, subdir))
 
 
 def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
