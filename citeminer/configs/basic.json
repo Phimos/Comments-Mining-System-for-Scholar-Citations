@@ -1,25 +1,16 @@
 {
-    "timeout": 10,
-    "metadata_save_dir": "./result/metadata",
-    "pdf_save_dir": "./result/pdfs",
+    "timeout": 20,
+    "result_dir": "result",
+    "metadata_dir": "metadata",
+    "pdf_dir": "pdfs",
+    "txt_dir": "txts",
+    "aminer_dir": "aminer",
     "authors":[
         {
-            "name": "Zhouchen Lin",
-            "publications":[
-                {
-                    "title": "111",
-                    "year_start": 2020,
-                    "year_end": 2020
-                }
-            ]
+            "name": "Zhouchen Lin"
         },
         {
-            "name": "Yisen Wang",
-            "publications": {
-                "title": "all",
-                "year_start": 2020,
-                "year_end": 2020
-            }
+            "name": "Yisen Wang"
         }
     ]
 }
