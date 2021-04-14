@@ -21,7 +21,7 @@ def go_allfiles(
 
 
 def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
-    tasks = []
+    tasks: List[Any] = []
     assert task_type in ["author", "pub", "cpub"]
 
     if task_type == "author":
@@ -40,6 +40,8 @@ def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
             for pub in os.listdir(pub_dir):
                 cpub_dir = os.path.join(pub_dir, pub, "cited")
                 for cpub in os.listdir(cpub_dir):
+                    assert cpub.endswith(".json")
+                    cpub = cpub[:-5]
                     tasks.append((author, pub, cpub))
 
     else:
