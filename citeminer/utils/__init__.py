@@ -1,7 +1,7 @@
 import json
 import os
 from functools import partial
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from citeminer.pdfparser.pdf2txt import extract_text
 from fuzzywuzzy import fuzz, process
@@ -30,6 +30,21 @@ def fuzzy_extract_one(
         return True, ret[0]
     else:
         return False, ""
+
+
+def search_metadata_dir(metadata_dir: str) -> Dict[str, Any]:
+    result: Dict = {}
+    for author in os.listdir(metadata_dir):
+        result[author] = {}
+        pub_dir = os.path.join(metadata_dir, author, "publications")
+        for pub in os.listdir(pub_dir):
+            result[author][pub] = []
+            cpub_dir = os.path.join(pub_dir, pub, "cited")
+            for cpub in os.listdir(cpub_dir):
+                if cpub.endswith(".json"):
+                    cpub = cpub[:-5]
+                    result[author][pub].append(cpub)
+    return result
 
 
 def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
