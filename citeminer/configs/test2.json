@@ -1,6 +1,6 @@
 {
     "timeout": 20,
-    "result_dir": "result",
+    "result_dir": "result_test",
     "metadata_dir": "metadata",
     "pdf_dir": "pdfs",
     "txt_dir": "txts",
