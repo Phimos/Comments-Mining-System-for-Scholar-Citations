@@ -32,7 +32,7 @@ def fuzzy_extract_one(
         return False, ""
 
 
-def search_metadata_dir(root_dir: str) -> Dict[str, Any]:
+def search_metadata_dir(root_dir: str) -> Dict[str, Dict[str, List]]:
     result: Dict = {}
     for author in os.listdir(root_dir):
         result[author] = {}
@@ -48,25 +48,23 @@ def search_metadata_dir(root_dir: str) -> Dict[str, Any]:
 
 def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
     tasks: List[Any] = []
+    data = search_metadata_dir(root_dir)
+
     assert task_type in ["author", "pub", "cpub"]
 
     if task_type == "author":
-        for author in os.listdir(root_dir):
+        for author in data.keys():
             tasks.append((author))
 
     elif task_type == "pub":
-        for author in os.listdir(root_dir):
-            pub_dir = os.path.join(root_dir, author, "publications")
-            for pub in os.listdir(pub_dir):
+        for author in data.keys():
+            for pub in data[author].keys():
                 tasks.append((author, pub))
 
     elif task_type == "cpub":
-        for author in os.listdir(root_dir):
-            pub_dir = os.path.join(root_dir, author, "publications")
-            for pub in os.listdir(pub_dir):
-                cpub_dir = os.path.join(pub_dir, pub, "cited")
-                for cpub in os.listdir(cpub_dir):
-                    cpub, *_ = os.path.splitext(cpub)
+        for author in data.keys():
+            for pub in data[author].keys():
+                for cpub in data[author][pub]:
                     tasks.append((author, pub, cpub))
 
     else:
