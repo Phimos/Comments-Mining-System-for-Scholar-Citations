@@ -1,6 +1,8 @@
 import json
 import os
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Tuple
+
+from citeminer.pdfparser.pdf2txt import extract_text
 
 
 def go_allfiles(
@@ -48,3 +50,27 @@ def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
         raise ValueError
 
     return tasks
+
+
+def convert2txt(task: Tuple) -> None:
+    author, pub, cpub = task
+    pdf_dir = ""
+    txt_dir = ""
+
+    pdf_path = os.path.join(
+        pdf_dir, author, "publications", pub, "cited", cpub + ".pdf"
+    )
+    txt_path = os.path.join(
+        txt_dir, author, "publications", pub, "cited", cpub + ".txt"
+    )
+
+    if not os.path.exists(pdf_path):
+        return
+    if os.path.exists(txt_path):
+        return
+
+    try:
+        os.makedirs(os.path.dirname(txt_path), exist_ok=True)
+        extract_text(files=[pdf_path], outfile=txt_path)
+    except:
+        pass
