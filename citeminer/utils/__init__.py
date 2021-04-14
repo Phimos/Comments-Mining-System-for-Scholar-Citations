@@ -4,12 +4,32 @@ from functools import partial
 from typing import Any, Callable, List, Optional, Tuple
 
 from citeminer.pdfparser.pdf2txt import extract_text
+from fuzzywuzzy import fuzz, process
 
 
 def dump_json(obj: Any, file_path: str) -> None:
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     fp = open(file_path, "w")
     json.dump(obj, fp, sort_keys=True, indent=4, separators=(",", ":"))
+
+
+def fuzzy_match(str1: str, str2: str, threshold: int = 85) -> bool:
+    str1 = str1.lower()
+    str2 = str2.lower()
+    return fuzz.ratio(str1, str2) >= threshold
+
+
+def fuzzy_extract_one(
+    query: str,
+    choices: List[str],
+    scorer: Callable = fuzz.token_set_ratio,
+    threshold: int = 85,
+) -> Tuple[bool, str]:
+    ret = process.extractOne(query, choices, scorer=scorer, score_cutoff=threshold)
+    if ret is not None:
+        return True, ret[0]
+    else:
+        return False, ""
 
 
 def generate_tasks(root_dir: str, task_type: str = "cpub") -> List[Any]:
