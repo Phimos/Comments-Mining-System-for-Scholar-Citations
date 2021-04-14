@@ -177,6 +177,9 @@ def download_pdf(task: Tuple, metadata_dir: str, pdf_dir: str, scihub_crawler) -
     json_path = get_cpub_path(metadata_dir, author, pub, cpub, ".json")
     pdf_path = get_cpub_path(pdf_dir, author, pub, cpub, ".pdf")
 
+    if not os.path.exists(json_path) or os.path.exists(pdf_path):
+        return
+
     os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
 
     info = load_json(json_path)

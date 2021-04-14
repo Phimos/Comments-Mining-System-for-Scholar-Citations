@@ -4,13 +4,14 @@ import os
 import random
 import re
 import time
+from functools import partial
 from typing import Any, Dict, List, Optional, Union
 
 import requests
 from citeminer.crawlers.scholar import ProxyGenerator, scholarly
 from citeminer.crawlers.scihub import SciHub
 from citeminer.types import Author, Publication
-from citeminer.utils import dump_json
+from citeminer.utils import download_pdf, dump_json, generate_tasks
 from citeminer.utils.markdown_writer import CitingDocument, CitingPublication
 
 
@@ -229,6 +230,20 @@ class PaperCollector(object):
         self.collect_metadata()
         self.collect_pdf_files()
         pass
+
+    def collect_pdfs(self) -> None:
+        tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
+        list(
+            map(
+                partial(
+                    download_pdf,
+                    metadata_dir=self.metadata_dir,
+                    pdf_dir=self.pdf_dir,
+                    scihub_crawler=self.scihub_crawler,
+                ),
+                tasks,
+            )
+        )
 
     def collect_pipeline(self) -> None:
         # collect_metadata_info
