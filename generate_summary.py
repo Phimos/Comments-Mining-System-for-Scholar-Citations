@@ -77,12 +77,20 @@ def generate_summary(metadata_path: str) -> None:
                 )
                 >= 85
             ) and "authors" in aminer_info["paper"].keys():
-                print(pub["bib"]["author"])
                 pub["bib"]["author"] = [
                     a["name"] for a in aminer_info["paper"]["authors"]
                 ]
-                print(pub["bib"]["author"])
-                print()
+                if (
+                    "venue" in aminer_info["paper"].keys()
+                    and "info" in aminer_info["paper"]["venue"].keys()
+                    and "name" in aminer_info["paper"]["venue"]["info"].keys()
+                ):
+                    pub["bib"]["journal"] = aminer_info["paper"]["venue"]["info"][
+                        "name"
+                    ]
+                    print(pub["bib"]["journal"])
+                if "abstract" in aminer_info["paper"].keys():
+                    pub["bib"]["abstract"] = aminer_info["paper"]["abstract"]
 
         pdf_path = (
             os.path.join(cited_dir, metadata)
