@@ -60,17 +60,9 @@ class CitationLocator(object):
                 comment_block = comment_block.replace(
                     item.group(), "**" + item.group() + "**"
                 )
-                # comment_block = re.search(
-                #    sentence_pattern
-                #    + "((\\([^\\(\\)]*\\))|(\\[[^\\[\\]]*\\])|(\\d+\\.\\d+)|[^\\(\\)\\[\\]])*"
-                #    + item.group().replace("[", "\\[").replace("]", "\\]")
-                #    + sentence_pattern
-                #    + sentence_pattern,
-                #    comment_block,
-                # ).group()
                 clean_block = self.clean_comment_block(comment_block)
                 comments.append(clean_block)
-        return comments
+        return comments[:-1]
 
     def _check_author(self, text: str, author: str, year: str) -> bool:
         for single_author in re.findall(single_author_pattern, text):
