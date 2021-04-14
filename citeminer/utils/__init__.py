@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import requests
 from citeminer.pdfparser.pdf2txt import extract_text
+from citeminer.utils.markdown_writer import CitingDocument
 from fuzzywuzzy import fuzz, process
 
 
@@ -114,6 +115,10 @@ def get_cpub_path(root_dir: str, author: str, pub: str, cpub: str, postfix: str)
     return os.path.join(root_dir, author, "publications", pub, "cited", cpub + postfix)
 
 
+def makepardirs(file_path):
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+
 def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
     """
     cpub level task
@@ -133,11 +138,70 @@ def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
         pass
 
 
-def generate_summary(task: Tuple) -> None:
+def generate_summary(
+    task: Tuple, metadata_dir: str, pdf_dir: str, aminer_dir: str, txt_dir: str, parser
+) -> None:
     """
     pub level task
     """
-    pass
+    author, pub = task
+
+    markdown_path = os.path.join(pdf_dir, author, "publications", pub, "summary.md")
+    json_path = os.path.join(metadata_dir, author, "publications", pub, pub + ".json")
+
+    makepardirs(markdown_path)
+    makepardirs(json_path)
+
+    cited_dir = os.path.join(metadata_dir, author, "publications", pub, "cited")
+
+    pub_info = load_json(json_path)
+
+    cpubs = []
+    for cpub in os.listdir(cited_dir):
+
+        cpub_info = load_json(os.path.join(cited_dir, cpub))
+
+        cpub, *_ = os.path.splitext(cpub)
+
+        aminer_path = get_cpub_path(aminer_dir, author, pub, cpub, ".json")
+        pdf_path = get_cpub_path(pdf_dir, author, pub, cpub, ".pdf")
+        txt_path = get_cpub_path(txt_dir, author, pub, cpub, ".txt")
+
+        if not cpub_info["filled"] and os.path.exists(aminer_path):
+            aminer_info = load_json(aminer_path)
+            if (
+                fuzzy_match(cpub_info["bib"]["title"], aminer_info["paper"]["title"])
+                and "authors" in aminer_info["paper"].keys()
+            ):
+                cpub_info["bib"]["author"] = [
+                    a["name"] for a in aminer_info["paper"]["authors"]
+                ]
+                if (
+                    "venue" in aminer_info["paper"].keys()
+                    and "info" in aminer_info["paper"]["venue"].keys()
+                    and "name" in aminer_info["paper"]["venue"]["info"].keys()
+                ):
+
+                    cpub_info["bib"]["journal"] = aminer_info["paper"]["venue"]["info"][
+                        "name"
+                    ]
+                    print(cpub_info["bib"]["journal"])
+                if "abstract" in aminer_info["paper"].keys():
+                    cpub_info["bib"]["abstract"] = aminer_info["paper"]["abstract"]
+
+        if os.path.exists(pdf_path):
+            cpub_info["pub_url"] = os.path.abspath(pdf_path)
+
+        comments = []
+        if os.path.exists(txt_path):
+            comments = parser.parse(txt_path, pub_info)
+
+        cpubs.append({"publication": cpub_info, "comments": comments})
+
+    try:
+        CitingDocument(pub_info["bib"]["title"], cpubs, markdown_path).save()
+    except:
+        pass
 
 
 def fill_pub_info(task: Tuple) -> None:
@@ -147,7 +211,7 @@ def fill_pub_info(task: Tuple) -> None:
     pass
 
 
-def simple_download(url, path):
+def simple_download(url: str, path: str) -> bool:
     try:
         res = requests.get(url)
         if (
@@ -190,12 +254,10 @@ def download_pdf(task: Tuple, metadata_dir: str, pdf_dir: str, scihub_crawler) -
                 return
             else:
                 print("[&failed]:", info["bib"]["title"])
-                pass
 
         ok = False
         if "eprint_url" in info.keys():
             ok = simple_download(info["eprint_url"], path=pdf_path)
-
         if not ok:
             ok = scihub_download(scihub_crawler, info["pub_url"], path=pdf_path)
 
