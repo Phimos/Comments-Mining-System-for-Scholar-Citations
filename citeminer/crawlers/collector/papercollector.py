@@ -257,6 +257,9 @@ class PaperCollector(object):
         self.collect_pdf_files()
         pass
 
+    def collect_pipeline(self) -> None:
+        pass
+
     def init_from_config(self, config: Dict[str, Any]) -> None:
         self.timeout = config.get("timeout", 20)
         result_dir = config.get("result_dir", "result")
