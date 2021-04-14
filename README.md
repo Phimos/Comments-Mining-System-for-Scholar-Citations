@@ -1,5 +1,30 @@
 # Comments-Mining-System-for-Scholar-Citations
 
+
+
+## Installation
+
+```
+pip install -e .
+```
+
+## Usage
+
+**collect metadata and pdf files**
+```
+python collect_pdf.py
+```
+
+**fill info and generate summary**
+```
+python generate_summary.py
+```
+
+
+
+
+## Useful Information
+
 * Sci-Hub downloader
   https://github.com/zaytoun/scihub.py
 
