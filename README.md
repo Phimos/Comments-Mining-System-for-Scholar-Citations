@@ -1,6 +1,6 @@
 # Comments-Mining-System-for-Scholar-Citations
 
-
+Yunchong Gan's Final Design
 
 ## Installation
 
