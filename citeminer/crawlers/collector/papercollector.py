@@ -258,6 +258,11 @@ class PaperCollector(object):
         pass
 
     def collect_pipeline(self) -> None:
+        # collect_metadata_info
+        # collect_pdf_files
+        # fill_metadata_info
+        # convert_pdf_2_txt
+        # generate_summary
         pass
 
     def init_from_config(self, config: Dict[str, Any]) -> None:
