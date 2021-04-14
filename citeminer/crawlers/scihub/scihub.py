@@ -54,7 +54,13 @@ class SciHub(object):
         Finds available scihub urls via https://sci-hub.now.sh/
         """
         urls = []
-        res = requests.get("https://sci-hub.now.sh/")
+        res = requests.get(
+            "https://sci-hub.now.sh/",
+            proxies={
+                "http": "http://127.0.0.1:24000",
+                "https": "http://127.0.0.1:24000",
+            },
+        )
         s = self._get_soup(res.content)
         for a in s.find_all("a", href=True):
             if "sci-hub." in a["href"]:
