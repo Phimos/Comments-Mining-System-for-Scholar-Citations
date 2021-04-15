@@ -10,6 +10,8 @@ from citeminer.pdfparser.pdf2txt import extract_text
 from citeminer.utils.markdown_writer import CitingDocument
 from fuzzywuzzy import fuzz, process
 
+# Json Load & Dump
+
 
 def dump_json(obj: Any, file_path: str) -> None:
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -24,6 +26,9 @@ def load_json(file_path: str) -> Dict[str, Any]:
     result = json.load(fp)
     fp.close()
     return result
+
+
+# Fuzzy Match
 
 
 def fuzzy_match(str1: str, str2: str, threshold: int = 85) -> bool:
@@ -43,6 +48,9 @@ def fuzzy_extract_one(
         return True, ret[0]
     else:
         return False, ""
+
+
+# Config Control
 
 
 def search_metadata_dir(root_dir: str) -> Dict[str, Dict[str, List]]:
@@ -116,7 +124,7 @@ def get_cpub_path(root_dir: str, author: str, pub: str, cpub: str, postfix: str)
     return os.path.join(root_dir, author, "publications", pub, "cited", cpub + postfix)
 
 
-def makepardirs(file_path):
+def makepardirs(file_path: str) -> None:
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
 
@@ -219,14 +227,13 @@ def fill_aminer_info(task: Tuple, metadata_dir: str, aminer_dir: str) -> None:
 
     makepardirs(aminer_path)
 
-    try:
-        info = load_json(metadata_path)
-        aminer = AMinerCrawler()
-        out = aminer.search_publication(info["bib"]["title"])
-        aminer.driver.quit()
-        dump_json(out, aminer_path)
-    except:
-        pass
+    info = load_json(metadata_path)
+    aminer = AMinerCrawler()
+    out = aminer.search_publication(info["bib"]["title"])
+    aminer.driver.quit()
+    dump_json(out, aminer_path)
+    # except:
+    #    pass
 
 
 def simple_download(url: str, path: str) -> bool:
