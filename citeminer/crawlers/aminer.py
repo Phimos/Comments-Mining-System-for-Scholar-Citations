@@ -104,16 +104,10 @@ class BaseCrawler(object):
         proxy: Optional[str] = None,
     ) -> None:
         super().__init__()
-        self.chrome_options = webdriver.ChromeOptions()
-        self.chrome_options.add_experimental_option(
-            "excludeSwitches", ["enable-automation"]
-        )
-        self.chrome_options.add_experimental_option("useAutomationExtension", False)
+        self.options = Options()
         if proxy is not None:
-            self.chrome_options.add_argument("-proxy-server=%s" % proxy)
-
+            self.options.add_argument("--proxy-server=%s" % proxy)
         if headless:
-            self.options = Options()
             self.options.add_argument("--headless")
             self.options.add_argument("--no-sandbox")
             self.options.add_argument("--no-gpu")
@@ -123,7 +117,7 @@ class BaseCrawler(object):
             self.options.binary_location = binary_location
             self.driver = webdriver.Chrome(chromedriver, options=self.options)
         else:
-            self.driver = webdriver.Chrome(chrome_options=self.chrome_options)
+            self.driver = webdriver.Chrome(options=self.options)
 
     @staticmethod
     def open_url_in_new_tab(func):
@@ -172,7 +166,9 @@ class AMinerCrawler(BaseCrawler):
 
     @BaseCrawler.random_sleep(min=2, max=5)
     def search_publication(self, title: str):
-        self.driver.get("https://www.aminer.org/search/pub?q={}".format(title))
+        query_url = "https://www.aminer.org/search/pub?q={}".format(title)
+        print(query_url)
+        self.driver.get(query_url)
 
         try:
             element_present = EC.presence_of_element_located(
