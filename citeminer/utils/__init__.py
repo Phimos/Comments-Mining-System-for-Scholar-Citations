@@ -228,12 +228,13 @@ def fill_aminer_info(task: Tuple, metadata_dir: str, aminer_dir: str) -> None:
     makepardirs(aminer_path)
 
     info = load_json(metadata_path)
-    aminer = AMinerCrawler()
-    out = aminer.search_publication(info["bib"]["title"])
-    aminer.driver.quit()
-    dump_json(out, aminer_path)
-    # except:
-    #    pass
+    try:
+        aminer = AMinerCrawler(proxy="http://127.0.0.1:24000")
+        out = aminer.search_publication(info["bib"]["title"])
+        aminer.driver.quit()
+        dump_json(out, aminer_path)
+    except:
+        pass
 
 
 def simple_download(url: str, path: str) -> bool:
