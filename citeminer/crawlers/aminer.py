@@ -98,22 +98,32 @@ class Publication(object):
 
 class BaseCrawler(object):
     def __init__(
-        self, headless=True, binary_location="/usr/bin/chrome-linux/chrome"
+        self,
+        headless=True,
+        binary_location="/usr/bin/chrome-linux/chrome",
+        proxy: Optional[str] = None,
     ) -> None:
         super().__init__()
+        self.chrome_options = webdriver.ChromeOptions()
+        self.chrome_options.add_experimental_option(
+            "excludeSwitches", ["enable-automation"]
+        )
+        self.chrome_options.add_experimental_option("useAutomationExtension", False)
+        if proxy is not None:
+            self.chrome_options.add_argument("-proxy-server=%s" % proxy)
 
         if headless:
-            self.chrome_options = Options()
-            self.chrome_options.add_argument("--headless")
-            self.chrome_options.add_argument("--no-sandbox")
-            self.chrome_options.add_argument("--no-gpu")
-            self.chrome_options.add_argument("--disable-setuid-sandbox")
-            self.chrome_options.add_argument("--single-process")
-            self.chrome_options.add_argument("--window-size=1920,1080")
-            self.chrome_options.binary_location = binary_location
-            self.driver = webdriver.Chrome(chromedriver, options=self.chrome_options)
+            self.options = Options()
+            self.options.add_argument("--headless")
+            self.options.add_argument("--no-sandbox")
+            self.options.add_argument("--no-gpu")
+            self.options.add_argument("--disable-setuid-sandbox")
+            self.options.add_argument("--single-process")
+            self.options.add_argument("--window-size=1920,1080")
+            self.options.binary_location = binary_location
+            self.driver = webdriver.Chrome(chromedriver, options=self.options)
         else:
-            self.driver = webdriver.Chrome()
+            self.driver = webdriver.Chrome(chrome_options=self.chrome_options)
 
     @staticmethod
     def open_url_in_new_tab(func):
@@ -157,8 +167,8 @@ class BaseCrawler(object):
 
 
 class AMinerCrawler(BaseCrawler):
-    def __init__(self, headless=True) -> None:
-        super().__init__(headless=headless)
+    def __init__(self, headless=True, proxy=None) -> None:
+        super().__init__(headless=headless, proxy=proxy)
 
     @BaseCrawler.random_sleep(min=2, max=5)
     def search_publication(self, title: str):
