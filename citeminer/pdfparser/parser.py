@@ -16,6 +16,7 @@ class PDFParser(object):
             text = f.read()
         text = text.replace("\n", " ")
         text = text.replace("- ", "")
+        text = text.replace("ﬁ", "fi")
 
         index = self.extractor.extract(text, info["bib"]["title"])
 
