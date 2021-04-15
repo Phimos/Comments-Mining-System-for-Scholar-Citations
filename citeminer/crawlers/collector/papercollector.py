@@ -13,6 +13,7 @@ from citeminer.crawlers.scihub import SciHub
 from citeminer.pdfparser.parser import PDFParser
 from citeminer.types import Author, Publication
 from citeminer.utils import (
+    convert2txt,
     download_pdf,
     dump_json,
     fill_aminer_info,
@@ -188,6 +189,12 @@ class PaperCollector(object):
                 ),
                 tasks,
             )
+        )
+
+    def from_pdf_to_txt(self) -> None:
+        tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
+        list(
+            map(partial(convert2txt, pdf_dir=self.pdf_dir, txt_dir=self.txt_dir), tasks)
         )
 
     def create_summaries(self) -> None:
