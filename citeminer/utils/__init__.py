@@ -5,6 +5,7 @@ from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import requests
+from citeminer.crawlers.aminer import AMinerCrawler
 from citeminer.pdfparser.pdf2txt import extract_text
 from citeminer.utils.markdown_writer import CitingDocument
 from fuzzywuzzy import fuzz, process
@@ -204,11 +205,28 @@ def generate_summary(
         pass
 
 
-def fill_pub_info(task: Tuple) -> None:
+def fill_aminer_info(task: Tuple, metadata_dir: str, aminer_dir: str) -> None:
     """
     cpub level task
     """
-    pass
+    author, pub, cpub = task
+
+    metadata_path = get_cpub_path(metadata_dir, author, pub, cpub, ".json")
+    aminer_path = get_cpub_path(aminer_dir, author, pub, cpub, ".json")
+
+    if not os.path.exists(metadata_path) or os.path.exists(aminer_path):
+        return
+
+    makepardirs(aminer_path)
+
+    try:
+        info = load_json(metadata_path)
+        aminer = AMinerCrawler()
+        out = aminer.search_publication(info["bib"]["title"])
+        aminer.driver.quit()
+        dump_json(out, aminer_path)
+    except:
+        pass
 
 
 def simple_download(url: str, path: str) -> bool:
