@@ -118,9 +118,6 @@ class PaperCollector(object):
             dump_json(dict_info, path)
             print(path, "saved.")
 
-    def webdriver_download(self, url, path):
-        print("Webdriver download:", url)
-
     def report(self) -> None:
         self.success = 0
         self.failed = 0
