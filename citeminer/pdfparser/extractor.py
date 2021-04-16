@@ -1,5 +1,5 @@
 import re
-from typing import Optional
+from typing import Optional, Tuple
 
 from citeminer import debug
 
@@ -32,23 +32,26 @@ class IndexExtractor(object):
         else:
             return None
 
-    def extract(self, text: str, title: str) -> Optional[str]:
+    def extract(self, text: str, title: str) -> Tuple[str, str]:
         citation_idx = self.extract_bracket(text, title)
         if citation_idx is not None:
-            return citation_idx
+            return "bracket", citation_idx
         citation_idx = self.extract_dot(text, title)
         if citation_idx is not None:
-            return citation_idx
-        return None
+            return "dot", citation_idx
+        return "none", ""
 
 
 if __name__ == "__main__":
     extractor = IndexExtractor()
-    with open("h.txt") as f:
+    with open("a.txt") as f:
         text = f.read()
-    text.replace("\n", "")
+    text = text.replace("\n", " ")
+    text = text.replace("- ", "")
+    text = text.replace("ﬁ", "fi")
     print(
         extractor.extract(
-            text, "A novel consistent random forest framework: Bernoulli random forests"
+            text,
+            "Improving Adversarial Robustness Requires Revisiting Misclassified Examples",
         )
     )

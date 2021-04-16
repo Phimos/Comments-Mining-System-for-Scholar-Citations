@@ -8,7 +8,7 @@ sentence_pattern = (
 single_index_pattern = "\\[(\\d+)\\]"
 multi_index_pattern = "\\[[^\\[\\]]*[^\\d](\\d+)[^\\d]+[^\\[\\]]*\\]"
 
-index_pattern = "\\[[^\\[\\]a-zA-Z]+\\]"
+index_pattern = "\\[[^\\[\\]a-zA-Z\\.]+\\]"
 single_author_pattern = "[a-zA-Z\\s\\.\\&]+,\\s\\d{4}"
 author_pattern = (
     "\\(" + single_author_pattern + "(" + ";" + single_author_pattern + ")*" + "\\)"
@@ -25,6 +25,11 @@ class CitationLocator(object):
             return True
         elif "-" in text:
             for left, right in re.findall("(\\d+)-(\\d+)", text):
+                if int(left) <= int(index) <= int(right):
+                    return True
+            return False
+        elif "–" in text:
+            for left, right in re.findall("(\\d+)–(\\d+)", text):
                 if int(left) <= int(index) <= int(right):
                     return True
             return False
@@ -62,7 +67,7 @@ class CitationLocator(object):
                 )
                 clean_block = self.clean_comment_block(comment_block)
                 comments.append(clean_block)
-        return comments[:-1]
+        return comments
 
     def _check_author(self, text: str, author: str, year: str) -> bool:
         for single_author in re.findall(single_author_pattern, text):
@@ -80,14 +85,18 @@ class CitationLocator(object):
 
 if __name__ == "__main__":
     locator = CitationLocator()
-    with open("c.txt") as f:
+    with open("a.txt") as f:
         text = f.read()
-    text = text.replace("\n", "")
+    text = text.replace("\n", " ")
+    text = text.replace("- ", "")
+    text = text.replace("ﬁ", "fi")
 
-    print(locator.locate_by_index(text, "19"))
+    for o in locator.locate_by_index(text, "44"):
+        print(o)
+        print()
 
-    with open("e.txt") as f:
-        text = f.read()
-    text = text.replace("\n", "")
-    locator.locate_by_author(text, "Wang", "2019")
-    pass
+    # with open("e.txt") as f:
+    #    text = f.read()
+    # text = text.replace("\n", "")
+    # locator.locate_by_author(text, "Wang", "2019")
+    # pass
