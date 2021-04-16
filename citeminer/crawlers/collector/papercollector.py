@@ -39,6 +39,8 @@ class PaperCollector(object):
         self.result_dir = result_dir
         self.author = author
         self.publictions = publications
+        # TODO: use config to control year_low & year_high
+        # TODO: not hard-code year_low & year_high in scholar code
         self.year_low = year_low
         self.year_high = year_high
         self.scholar_crawler = scholarly
@@ -118,6 +120,7 @@ class PaperCollector(object):
                 )
 
     def save_scholar_json(self, info: Union[Author, Publication], path: str):
+        # TODO: move the statement and delete this function
         if os.path.exists(path):
             print(path, "already exists")
             return
@@ -127,6 +130,8 @@ class PaperCollector(object):
             print(path, "saved.")
 
     def report(self) -> None:
+        # TODO: move this function into utils module
+        # TODO: add a new class to count number and report
         self.success = 0
         self.failed = 0
         self.undefined = 0
@@ -162,6 +167,7 @@ class PaperCollector(object):
         )
 
     def collect(self, config: Dict[str, Any]) -> None:
+        # TODO: the function need to be deleted
         self.init_from_config(config)
         self.collect_metadata()
 
@@ -211,6 +217,7 @@ class PaperCollector(object):
         )
 
     def collect_pipeline(self) -> None:
+        # TODO: make it a real function and test
         # collect_metadata_info
         # collect_pdf_files
         # fill_metadata_info
