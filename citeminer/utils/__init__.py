@@ -2,7 +2,7 @@ import json
 import os
 from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 import requests
 from citeminer.crawlers.aminer import AMinerCrawler
@@ -12,7 +12,7 @@ from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
 
 
-def apply_func(func: Callable, iterator: Iterator) -> None:
+def apply_func(func: Callable, iterator: Iterable) -> None:
     for item in tqdm(iterator):
         func(item)
 
