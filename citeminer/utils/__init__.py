@@ -2,13 +2,20 @@ import json
 import os
 from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple
 
 import requests
 from citeminer.crawlers.aminer import AMinerCrawler
 from citeminer.pdfparser.pdf2txt import extract_text
 from citeminer.utils.markdown_writer import CitingDocument
 from fuzzywuzzy import fuzz, process
+from tqdm import tqdm
+
+
+def apply_func(func: Callable, iterator: Iterator) -> None:
+    for item in tqdm(iterator):
+        func(item)
+
 
 # Json Load & Dump
 
