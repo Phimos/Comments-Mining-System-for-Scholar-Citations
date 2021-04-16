@@ -194,7 +194,7 @@ def generate_summary(
                     cpub_info["bib"]["journal"] = aminer_info["paper"]["venue"]["info"][
                         "name"
                     ]
-                    print(cpub_info["bib"]["journal"])
+                    # print(cpub_info["bib"]["journal"])
                 if "abstract" in aminer_info["paper"].keys():
                     cpub_info["bib"]["abstract"] = aminer_info["paper"]["abstract"]
 
