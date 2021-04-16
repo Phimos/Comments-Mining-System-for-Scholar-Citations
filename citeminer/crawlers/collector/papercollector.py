@@ -13,6 +13,7 @@ from citeminer.crawlers.scihub import SciHub
 from citeminer.pdfparser.parser import PDFParser
 from citeminer.types import Author, Publication
 from citeminer.utils import (
+    apply_func,
     convert2txt,
     download_pdf,
     dump_json,
@@ -166,53 +167,47 @@ class PaperCollector(object):
 
     def collect_pdfs(self) -> None:
         tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
-        list(
-            map(
-                partial(
-                    download_pdf,
-                    metadata_dir=self.metadata_dir,
-                    pdf_dir=self.pdf_dir,
-                    scihub_crawler=self.scihub_crawler,
-                ),
-                tasks,
-            )
+        apply_func(
+            partial(
+                download_pdf,
+                metadata_dir=self.metadata_dir,
+                pdf_dir=self.pdf_dir,
+                scihub_crawler=self.scihub_crawler,
+            ),
+            tasks,
         )
 
     def collect_aminer_info(self) -> None:
         tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
-        list(
-            map(
-                partial(
-                    fill_aminer_info,
-                    metadata_dir=self.metadata_dir,
-                    aminer_dir=self.aminer_dir,
-                ),
-                tasks,
-            )
+        apply_func(
+            partial(
+                fill_aminer_info,
+                metadata_dir=self.metadata_dir,
+                aminer_dir=self.aminer_dir,
+            ),
+            tasks,
         )
 
     def from_pdf_to_txt(self) -> None:
         tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
-        list(
-            map(partial(convert2txt, pdf_dir=self.pdf_dir, txt_dir=self.txt_dir), tasks)
+        apply_func(
+            partial(convert2txt, pdf_dir=self.pdf_dir, txt_dir=self.txt_dir), tasks
         )
 
     def create_summaries(self) -> None:
         tasks = generate_tasks(
             self.metadata_dir, task_type="pub", user_guide_info=self.authors
         )
-        list(
-            map(
-                partial(
-                    generate_summary,
-                    metadata_dir=self.metadata_dir,
-                    pdf_dir=self.pdf_dir,
-                    aminer_dir=self.aminer_dir,
-                    txt_dir=self.txt_dir,
-                    parser=PDFParser(),
-                ),
-                tasks,
-            )
+        apply_func(
+            partial(
+                generate_summary,
+                metadata_dir=self.metadata_dir,
+                pdf_dir=self.pdf_dir,
+                aminer_dir=self.aminer_dir,
+                txt_dir=self.txt_dir,
+                parser=PDFParser(),
+            ),
+            tasks,
         )
 
     def collect_pipeline(self) -> None:
