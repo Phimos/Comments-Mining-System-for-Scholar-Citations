@@ -34,10 +34,10 @@ class IndexExtractor(object):
 
     def extract(self, text: str, title: str) -> Tuple[str, str]:
         citation_idx = self.extract_bracket(text, title)
-        if citation_idx is not None:
+        if citation_idx is not None and len(citation_idx) < 4:
             return "bracket", citation_idx
         citation_idx = self.extract_dot(text, title)
-        if citation_idx is not None:
+        if citation_idx is not None and len(citation_idx) < 4:
             return "dot", citation_idx
         return "none", ""
 
