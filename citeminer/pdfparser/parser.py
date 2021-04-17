@@ -19,7 +19,7 @@ class PDFParser(object):
         text = text.replace("ﬁ", "fi")
 
         index_type, index = self.extractor.extract(text, info["bib"]["title"])
-
+        # TODO: filter the index one with bib title
         if index_type != "none":
             comments = self.locator.locate_by_index(text, index)
             if index_type == "bracket":
@@ -27,8 +27,12 @@ class PDFParser(object):
             else:
                 return comments
 
+        elif "author" in info["bib"].keys() and "pub_year" in info["bib"].keys():
+            authors: str = info["bib"]["author"]
+            first_author = authors.split("and")[0].strip()
+            last_name = first_author.split(" ")[-1].strip()
+            pub_year = info["bib"]["pub_year"]
+            return self.locator.locate_by_author(text, last_name, pub_year)
+
         else:
             return []
-            return self.locator.locate_by_author(
-                text, info["bib"]["author"][0], info["bib"]["pub_year"]
-            )

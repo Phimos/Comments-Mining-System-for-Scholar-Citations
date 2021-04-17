@@ -9,10 +9,6 @@ single_index_pattern = "\\[(\\d+)\\]"
 multi_index_pattern = "\\[[^\\[\\]]*[^\\d](\\d+)[^\\d]+[^\\[\\]]*\\]"
 
 index_pattern = "\\[[^\\[\\]a-zA-Z\\.]+\\]"
-single_author_pattern = "[a-zA-Z\\s\\.\\&]+,\\s\\d{4}"
-author_pattern = (
-    "\\(" + single_author_pattern + "(" + ";" + single_author_pattern + ")*" + "\\)"
-)
 
 
 class CitationLocator(object):
@@ -37,6 +33,8 @@ class CitationLocator(object):
             return False
 
     def split_sentences(self, block):
+        # TODO: don't drop when the first block is needed
+        # eg. A Topological Filter for Learning with Label Noise <- Dimensionality-Driven Learning with Noisy Labels
         sentence_pattern = "[^\.]*\."
         result = []
         for i, s in enumerate(re.findall(sentence_pattern, block)):
@@ -58,7 +56,7 @@ class CitationLocator(object):
 
     def locate_by_index(self, text: str, index: str) -> List[str]:
         comments = []
-        for item in re.finditer(index_pattern, text):
+        for item in re.finditer(index_pattern, text, re.I):
             if self._check_index(item.group(), index):
                 # Todo: replace it with better match algo
                 comment_block = text[item.start() - 500 : item.end() + 500]
@@ -70,22 +68,36 @@ class CitationLocator(object):
         return comments
 
     def _check_author(self, text: str, author: str, year: str) -> bool:
-        for single_author in re.findall(single_author_pattern, text):
-            if author in single_author and year in single_author:
-                return True
-        return False
+        # TODO: finish it
+        return True
 
-    def locate_by_author(self, text: str, author: str, year: str) -> List[str]:
+    def locate_by_author(
+        self, text: str, author_last_name: str, year: str
+    ) -> List[str]:
         comments = []
+        author_pattern = (
+            "[^a-zA-Z]" + author_last_name + "[^a-zA-Z]" + "[^\\d]{0,20}" + year
+        )
         for item in re.finditer(author_pattern, text):
-            if self._check_author(item.group(), author, year):
-                comments.append(text[item.start() - 500 : item.end() + 100])
+            if self._check_author(item.group(), author_last_name, year):
+                comment_block = text[item.start() - 500 : item.end() + 500]
+                comment_block = (
+                    comment_block.replace(
+                        item.group().strip(), "**" + item.group().strip() + "**"
+                    )
+                    .replace("(**", "**(")
+                    .replace("[**", "**[")
+                    .replace("**)", ")**")
+                    .replace("**]", "]**")
+                )
+                clean_block = self.clean_comment_block(comment_block)
+                comments.append(clean_block)
         return comments
 
 
 if __name__ == "__main__":
     locator = CitationLocator()
-    with open("a.txt") as f:
+    with open("aaa.txt") as f:
         text = f.read()
     text = text.replace("\n", " ")
     text = text.replace("- ", "")
@@ -95,6 +107,15 @@ if __name__ == "__main__":
         print(o)
         print()
 
+    for o in locator.locate_by_author(text, "Ma", "2018"):
+        print(o)
+        print()
+
+    for i in re.finditer(
+        "Ma[^\\d]{0,20}2018",
+        "dp, or storage limits, data turns are available for the limited duration. Moreover, in such scenarios, combating label noise adds to the challenge.  The prior art tries to enhance the robustness of the deep model training against noisy labels in the off-line scenario by (i) filtering out noisy data through model disagreement Han et al. [2018], Yu et al. [2019], (ii) correcting noisy labels through the estimated noisy corruption matrix Patrini et al. [2017], or (iii) modifying the loss functions Ma et al. [2018], Wang et al. [2019]. Among the related studies, high quality labels from human expert",
+    ):
+        print(i.group())
     # with open("e.txt") as f:
     #    text = f.read()
     # text = text.replace("\n", "")
