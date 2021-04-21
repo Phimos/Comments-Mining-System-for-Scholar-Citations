@@ -1,26 +1,28 @@
 # Comments-Mining-System-for-Scholar-Citations
 
-Yunchong Gan's Final Design
+Yunchong Gan's graduation project for undergraduates
 
 ## Installation
 
+clone this repo into local disk.
+```
+git clone https://github.com/Phimos/Comments-Mining-System-for-Scholar-Citations
+```
+
+install citeminer with pip.
 ```
 pip install -e .
 ```
 
 ## Usage
 
-**collect metadata and pdf files**
-```
-python collect_pdf.py
-```
+Use json config to determine the author / publication needed to be mined.
 
-**fill info and generate summary**
-```
-python generate_summary.py
-```
+Change the config path in `pipeline.py`, and you can only run specific step if you want.
 
-
+```
+python pipeline.py
+```
 
 
 ## Useful Information
