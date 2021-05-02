@@ -8,10 +8,14 @@ class IndexExtractor(object):
     def __init__(self) -> None:
         super().__init__()
 
-    def extract_bracket(self, text: str, title: str) -> Optional[str]:
+    @staticmethod
+    def title_pattern(title: str) -> str:
         words = re.findall(r"\w+", title)
         words = list("".join(words))
-        pattern = "\\[\\s*\\d+\\s*\\][^\\[\\]]{0,200}" + "\\W*".join(words)
+        return "\\W*".join(words)
+
+    def extract_bracket(self, text: str, title: str) -> Optional[str]:
+        pattern = "\\[\\s*\\d+\\s*\\][^\\[\\]]{0,200}" + self.title_pattern(title)
         result = re.search(pattern, text, re.I | re.U)
         if result:
             citation = result.group()
@@ -21,9 +25,7 @@ class IndexExtractor(object):
             return None
 
     def extract_dot(self, text: str, title: str) -> Optional[str]:
-        words = re.findall(r"\w+", title)
-        words = list("".join(words))
-        pattern = "\\d+\\.(([^\\d]\\.)|([^\\.]))*" + "\\W*".join(words)
+        pattern = "\\d+\\.(([^\\d]\\.)|([^\\.]))*" + self.title_pattern(title)
         result = re.search(pattern, text, re.I | re.U)
         if result:
             citation = result.group()
