@@ -16,6 +16,7 @@ class CitationLocator(object):
         super().__init__()
 
     def _check_index(self, text: str, index: str) -> bool:
+        # TODO: check [24]-[27] type
         indices = re.findall("\\d+", text)
         if index in indices:
             return True
@@ -42,7 +43,7 @@ class CitationLocator(object):
                 result.append(s)
                 continue
 
-            if s[0] == "," or not " " in s.strip():
+            if s[0] == "," or (not " " in s.strip() and len(s) < 20):
                 result[-1] = result[-1] + s
             else:
                 result.append(s)
@@ -64,6 +65,7 @@ class CitationLocator(object):
                     item.group(), "**" + item.group() + "**"
                 )
                 clean_block = self.clean_comment_block(comment_block)
+                # clean_block = comment_block
                 comments.append(clean_block)
         return comments
 
@@ -91,6 +93,7 @@ class CitationLocator(object):
                     .replace("**]", "]**")
                 )
                 clean_block = self.clean_comment_block(comment_block)
+                # clean_block = comment_block
                 comments.append(clean_block)
         return comments
 
@@ -116,8 +119,3 @@ if __name__ == "__main__":
         "dp, or storage limits, data turns are available for the limited duration. Moreover, in such scenarios, combating label noise adds to the challenge.  The prior art tries to enhance the robustness of the deep model training against noisy labels in the off-line scenario by (i) filtering out noisy data through model disagreement Han et al. [2018], Yu et al. [2019], (ii) correcting noisy labels through the estimated noisy corruption matrix Patrini et al. [2017], or (iii) modifying the loss functions Ma et al. [2018], Wang et al. [2019]. Among the related studies, high quality labels from human expert",
     ):
         print(i.group())
-    # with open("e.txt") as f:
-    #    text = f.read()
-    # text = text.replace("\n", "")
-    # locator.locate_by_author(text, "Wang", "2019")
-    # pass
