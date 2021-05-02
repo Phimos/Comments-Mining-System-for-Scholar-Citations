@@ -44,21 +44,20 @@ class PaperCollector(object):
         self.year_low = year_low
         self.year_high = year_high
         self.scholar_crawler = scholarly
-        self.scihub_crawler = SciHub()
+
         pg = ProxyGenerator()
         pg.SingleProxy(http="http://127.0.0.1:24000", https="http://127.0.0.1:24000")
         self.scholar_crawler.use_proxy(pg)
-        self.scihub_crawler.set_proxy("http://127.0.0.1:24000")
 
-    def _download_pdf(self, publication: Publication, save_dir: str) -> Optional[str]:
-        ok = self.scihub_crawler.download(
-            publication["pub_url"], save_dir, publication["bib"]["title"] + ".pdf"
-        )
-        return (
-            os.path.join(save_dir, publication["bib"]["title"] + ".pdf")
-            if ok is not None
-            else None
-        )
+    # def _download_pdf(self, publication: Publication, save_dir: str) -> Optional[str]:
+    #    ok = self.scihub_crawler.download(
+    #        publication["pub_url"], save_dir, publication["bib"]["title"] + ".pdf"
+    #    )
+    #    return (
+    #        os.path.join(save_dir, publication["bib"]["title"] + ".pdf")
+    #        if ok is not None
+    #        else None
+    #    )
 
     @staticmethod
     def filename(name: str) -> str:
@@ -173,12 +172,16 @@ class PaperCollector(object):
 
     def collect_pdfs(self) -> None:
         tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
+
+        scihub_crawler = SciHub()
+        scihub_crawler.set_proxy("http://127.0.0.1:24000")
+
         apply_func(
             partial(
                 download_pdf,
                 metadata_dir=self.metadata_dir,
                 pdf_dir=self.pdf_dir,
-                scihub_crawler=self.scihub_crawler,
+                scihub_crawler=scihub_crawler,
             ),
             tasks,
         )
