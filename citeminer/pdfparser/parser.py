@@ -1,3 +1,4 @@
+import re
 from typing import Dict, List, Optional
 
 from .extractor import IndexExtractor
@@ -11,6 +12,16 @@ class PDFParser(object):
         self.extractor = IndexExtractor()
         self.locator = CitationLocator()
 
+    def delete_reference_line(self, comments: List[str], title: str) -> List[str]:
+        result = []
+        pattern = IndexExtractor.title_pattern(title)
+        for comment in comments:
+            if re.search(pattern, comment, re.I | re.U):
+                pass
+            else:
+                result.append(comment)
+        return result
+
     def parse(self, file_path: str, info: Dict) -> List[str]:
         with open(file_path) as f:
             text = f.read()
@@ -22,10 +33,7 @@ class PDFParser(object):
         # TODO: filter the index one with bib title
         if index_type != "none":
             comments = self.locator.locate_by_index(text, index)
-            if index_type == "bracket":
-                return comments[:-1]
-            else:
-                return comments
+            return self.delete_reference_line(comments, info["bib"]["title"])
 
         elif "author" in info["bib"].keys() and "pub_year" in info["bib"].keys():
             authors: str = info["bib"]["author"]
