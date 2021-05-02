@@ -4,6 +4,7 @@ from copy import deepcopy
 from functools import partial
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
+import pdfx
 import requests
 from citeminer.crawlers.aminer import AMinerCrawler
 from citeminer.pdfparser.pdf2txt import extract_text
@@ -150,6 +151,27 @@ def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
     try:
         os.makedirs(os.path.dirname(txt_path), exist_ok=True)
         extract_text(files=[pdf_path], outfile=txt_path)
+    except:
+        pass
+
+
+def convert2txt_pdfx(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
+    author, pub, cpub = task
+
+    pdf_path = get_cpub_path(pdf_dir, author, pub, cpub, ".pdf")
+    txt_path = get_cpub_path(txt_dir, author, pub, cpub, ".txt")
+
+    if not os.path.exists(pdf_path) or os.path.exists(txt_path):
+        return
+
+    try:
+        os.makedirs(os.path.dirname(txt_path), exist_ok=True)
+        pdf = pdfx.PDFx(pdf_path)
+        out = pdf.get_text()
+        with open(txt_path, "w") as f:
+            f.write(out)
+        print(txt_path)
+
     except:
         pass
 

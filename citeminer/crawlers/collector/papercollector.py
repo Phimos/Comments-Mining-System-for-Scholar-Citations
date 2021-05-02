@@ -15,6 +15,7 @@ from citeminer.types import Author, Publication
 from citeminer.utils import (
     apply_func,
     convert2txt,
+    convert2txt_pdfx,
     download_pdf,
     dump_json,
     fill_aminer_info,
@@ -118,7 +119,7 @@ class PaperCollector(object):
                     ),
                 )
 
-    def save_scholar_json(self, info: Union[Author, Publication], path: str):
+    def save_scholar_json(self, info: Union[Author, Publication], path: str) -> None:
         # TODO: move the statement and delete this function
         if os.path.exists(path):
             print(path, "already exists")
@@ -200,7 +201,7 @@ class PaperCollector(object):
     def from_pdf_to_txt(self) -> None:
         tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
         apply_func(
-            partial(convert2txt, pdf_dir=self.pdf_dir, txt_dir=self.txt_dir), tasks
+            partial(convert2txt_pdfx, pdf_dir=self.pdf_dir, txt_dir=self.txt_dir), tasks
         )
 
     def create_summaries(self) -> None:
