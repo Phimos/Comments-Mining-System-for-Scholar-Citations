@@ -1,5 +1,10 @@
-class AllInOneDownloader(object):
-    def __init__(self, downloaders) -> None:
+from typing import List
+
+from citeminer.crawlers.downloader import BaseDownlaoder
+
+
+class AllInOneDownloader(BaseDownlaoder):
+    def __init__(self, downloaders: List[BaseDownlaoder]) -> None:
         super().__init__()
         self.downloaders = downloaders
 
