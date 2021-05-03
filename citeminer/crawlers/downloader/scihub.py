@@ -12,6 +12,7 @@ import hashlib
 import logging
 import os
 import re
+from typing import Optional
 
 import requests
 import urllib3
@@ -309,6 +310,35 @@ class SciHub(object):
 
 class CaptchaNeedException(Exception):
     pass
+
+
+class SciHubDownloader(object):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def download(
+        self, url: str, path: str, title: str, doi: Optional[str] = None
+    ) -> bool:
+        html = requests.post(
+            "https://sci-hub.se/",
+            {
+                "request": "A survey of intrusion detection in wireless network applications"
+            },
+        )
+        html.encoding = html.apparent_encoding
+        soup = BeautifulSoup(html.text, "lxml")
+        real_url = soup.find("iframe").get("src")
+        res = requests.get(real_url)
+        if (
+            "application/pdf" in res.headers["Content-Type"]
+            or "application/octet-stream" in res.headers["Content-Type"]
+            or "application/x-download" in res.headers["Content-Type"]
+        ):
+            with open(path, "wb") as f:
+                f.write(res.content)
+            return True
+        else:
+            return False
 
 
 def main():
