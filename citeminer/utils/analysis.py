@@ -7,7 +7,7 @@ import pandas as pd
 import tableprint as tp
 
 
-def collect_failed_data(metadata_dir: str) -> None:
+def collect_failed_data(metadata_dir: str = os.path.join("result", "metadata")) -> None:
     success_cnt = 0
     failed_cnt = 0
 
@@ -28,7 +28,13 @@ def collect_failed_data(metadata_dir: str) -> None:
                 if "saved" not in info.keys():
                     continue
 
-                if info["saved"] == "success":
+                #                if info["saved"] == "success":
+                if os.path.exists(
+                    os.path.join(
+                        pub_path.replace("/metadata/", "/pdfs/"),
+                        cpub.replace(".json", ".pdf"),
+                    )
+                ):
                     success_cnt += 1
                     continue
 
@@ -37,6 +43,7 @@ def collect_failed_data(metadata_dir: str) -> None:
                     if "eprint_url" in info.keys():
                         failed_eprint_cnt += 1
                         eprint_urls.append(info["eprint_url"])
+                        # print(info["eprint_url"])
                     else:
                         failed_without_eprint_cnt += 1
                     pub_urls.append(info["pub_url"])
