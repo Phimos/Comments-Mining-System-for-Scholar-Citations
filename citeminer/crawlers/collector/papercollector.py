@@ -8,6 +8,14 @@ from functools import partial
 from typing import Any, Dict, List, Optional, Union
 
 import requests
+from citeminer.crawlers.downloader import (
+    AllInOneDownloader,
+    DummyDownloader,
+    HindawiDownloader,
+    IEEEDownloader,
+    SciHubDownloader,
+    SimpleDownloader,
+)
 from citeminer.crawlers.scholar import ProxyGenerator, scholarly
 from citeminer.crawlers.scihub import SciHub
 from citeminer.pdfparser.parser import PDFParser
@@ -174,15 +182,28 @@ class PaperCollector(object):
     def collect_pdfs(self) -> None:
         tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
 
-        scihub_crawler = SciHub()
-        scihub_crawler.set_proxy("http://127.0.0.1:24000")
+        random.shuffle(tasks)
+
+        # scihub_crawler = SciHub()
+        # scihub_crawler.set_proxy("http://127.0.0.1:24000")
+
+        downloader = AllInOneDownloader(
+            [
+                DummyDownloader(),
+                #                SimpleDownloader(),
+                #                IEEEDownloader(),
+                #                HindawiDownloader(),
+                SciHubDownloader(),
+            ]
+        )
 
         apply_func(
             partial(
                 download_pdf,
                 metadata_dir=self.metadata_dir,
                 pdf_dir=self.pdf_dir,
-                scihub_crawler=scihub_crawler,
+                # scihub_crawler=scihub_crawler,
+                downloader=downloader,
             ),
             tasks,
         )

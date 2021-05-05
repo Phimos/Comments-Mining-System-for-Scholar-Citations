@@ -1,12 +1,16 @@
+from typing import Any
+
 import requests
 from bs4 import BeautifulSoup
 
+from .base import BaseDownlaoder
 
-class IEEEDownloader(object):
+
+class IEEEDownloader(BaseDownlaoder):
     def __init__(self) -> None:
         super().__init__()
 
-    def download(self, url: str, path: str) -> bool:
+    def download(self, url: str, path: str, **kwargs: Any) -> bool:
         if "ieeexplore.ieee.org" not in url:
             return False
 
@@ -14,20 +18,25 @@ class IEEEDownloader(object):
             res = requests.get(url)
             soup = BeautifulSoup(res.text, "lxml")
             real_url = soup.find("iframe").get("src")
-
-            res = requests.get(real_url)
-            if (
-                "application/pdf" in res.headers["Content-Type"]
-                or "application/octet-stream" in res.headers["Content-Type"]
-                or "application/x-download" in res.headers["Content-Type"]
-            ):
-                with open(path, "wb") as f:
-                    f.write(res.content)
-                return True
-            else:
-                return False
         except:
             return False
+
+        return self.simple_download(real_url, path)
+
+
+class HindawiDownloader(BaseDownlaoder):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def download(self, url: str, path: str, **kwargs: Any) -> bool:
+        if "www.hindawi.com" not in url:
+            return False
+
+        if not url.endswith(".pdf") and url.endswith("/"):
+            real_url = url[:-1] + ".pdf"
+            real_url = real_url.replace("www.hindawi.com", "downloads.hindawi.com")
+        print(real_url)
+        return self.simple_download(real_url, path)
 
 
 if __name__ == "__main__":

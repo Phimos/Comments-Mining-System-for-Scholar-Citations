@@ -1,15 +1,16 @@
-from typing import AbstractSet
-
-from .scihub import SciHub
+from .allinone import AllInOneDownloader
+from .base import BaseDownlaoder
+from .dummy import DummyDownloader
+from .ieee_downloader import HindawiDownloader, IEEEDownloader
+from .scihub import SciHub, SciHubDownloader
 from .simple import SimpleDownloader
 
-
-class BaseDownlaoder(object):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def download(self, url: str, path: str) -> bool:
-        return False
-
-
-__all__ = ["SciHub", "SimpleDownloader"]
+__all__ = [
+    "SciHub",
+    "SimpleDownloader",
+    "AllInOneDownloader",
+    "HindawiDownloader",
+    "DummyDownloader",
+    "IEEEDownloader",
+    "SciHubDownloader",
+]

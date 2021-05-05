@@ -6,18 +6,21 @@ Sci-API Unofficial API
 
 @author zaytoun
 """
-
 import argparse
 import hashlib
 import logging
 import os
+import random
 import re
-from typing import Optional
+import time
+from typing import Any, Optional
 
 import requests
 import urllib3
 from bs4 import BeautifulSoup
 from retrying import retry
+
+from .base import BaseDownlaoder
 
 # log config
 logging.basicConfig()
@@ -312,33 +315,38 @@ class CaptchaNeedException(Exception):
     pass
 
 
-class SciHubDownloader(object):
+class SciHubDownloader(BaseDownlaoder):
     def __init__(self) -> None:
         super().__init__()
 
     def download(
-        self, url: str, path: str, title: str, doi: Optional[str] = None
+        self, url: str, path: str, title: str, doi: Optional[str] = None, **kwargs: Any
     ) -> bool:
-        html = requests.post(
-            "https://sci-hub.se/",
-            {
-                "request": "A survey of intrusion detection in wireless network applications"
-            },
-        )
-        html.encoding = html.apparent_encoding
-        soup = BeautifulSoup(html.text, "lxml")
-        real_url = soup.find("iframe").get("src")
-        res = requests.get(real_url)
-        if (
-            "application/pdf" in res.headers["Content-Type"]
-            or "application/octet-stream" in res.headers["Content-Type"]
-            or "application/x-download" in res.headers["Content-Type"]
-        ):
-            with open(path, "wb") as f:
-                f.write(res.content)
-            return True
-        else:
+        try:
+            html = requests.post(
+                random.choice(
+                    [
+                        "https://sci-hub.se/",
+                        "https://sci-hub.st/",
+                        "https://sci-hub.do/",
+                    ]
+                ),
+                {"request": title},
+            )
+            print(html)
+            html.encoding = html.apparent_encoding
+            soup = BeautifulSoup(html.text, "lxml")
+            real_url = soup.find("iframe").get("src")
+            real_url = re.sub("#view=(.+)", "", real_url)
+            if not real_url.startswith("https:"):
+                real_url = "https:" + real_url
+            print(real_url)
+        except:
             return False
+
+        time.sleep(random.uniform(5, 20))
+
+        return self.simple_download(real_url, path)
 
 
 def main():

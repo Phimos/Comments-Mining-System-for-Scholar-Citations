@@ -1,6 +1,6 @@
-from typing import List
+from typing import Any, List
 
-from citeminer.crawlers.downloader import BaseDownlaoder
+from .base import BaseDownlaoder
 
 
 class AllInOneDownloader(BaseDownlaoder):
@@ -8,8 +8,8 @@ class AllInOneDownloader(BaseDownlaoder):
         super().__init__()
         self.downloaders = downloaders
 
-    def download(self, url: str, path: str) -> bool:
+    def download(self, url: str, path: str, **kwargs: Any) -> bool:
         for downloader in self.downloaders:
-            if downloader.download(url, path):
+            if downloader.download(url, path, **kwargs):
                 return True
         return False

@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 import pdfx
 import requests
 from citeminer.crawlers.aminer import AMinerCrawler
+from citeminer.crawlers.downloader import BaseDownlaoder
 from citeminer.pdfparser.pdf2txt import extract_text
 from citeminer.utils.markdown_writer import CitingDocument
 from fuzzywuzzy import fuzz, process
@@ -287,7 +288,12 @@ def scihub_download(scihub_crawler, url, path):
     return scihub_crawler.download(url, path=path)
 
 
-def download_pdf(task: Tuple, metadata_dir: str, pdf_dir: str, scihub_crawler) -> None:
+def download_pdf(
+    task: Tuple,
+    metadata_dir: str,
+    pdf_dir: str,
+    downloader: BaseDownlaoder,
+) -> None:
     """
     cpub level task
     """
@@ -302,6 +308,8 @@ def download_pdf(task: Tuple, metadata_dir: str, pdf_dir: str, scihub_crawler) -
     os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
 
     info = load_json(json_path)
+
+    """
     if "pub_url" in info.keys():
         if "saved" in info.keys():
             if info["saved"] == "success":
@@ -314,10 +322,29 @@ def download_pdf(task: Tuple, metadata_dir: str, pdf_dir: str, scihub_crawler) -
         if "eprint_url" in info.keys():
             ok = simple_download(info["eprint_url"], path=pdf_path)
         if not ok:
-            ok = scihub_download(scihub_crawler, info["pub_url"], path=pdf_path)
+            pass
+        #            ok = scihub_download(scihub_crawler, info["pub_url"], path=pdf_path)
 
         status = "success" if ok else "failed"
         info["saved"] = status
         print("[%s]: %s" % (status, info["bib"]["title"]))
 
         dump_json(info, json_path)
+    return
+    """
+    if downloader.download(
+        url=info.get("eprint_url", ""), path=pdf_path, title=info["bib"]["title"]
+    ):
+        print("[success]", info["bib"]["title"], info.get("eprint_url", ""))
+
+    else:
+        #        print("[failed]", info["bib"]["title"], info.get("eprint_url", ""))
+        pass
+
+
+def valid_pdf():
+    pdfx.PDFx().is_pdf
+    import filetype
+
+    def is_pdf(path_to_file):
+        return filetype.guess(path_to_file).mime == "application/pdf"
