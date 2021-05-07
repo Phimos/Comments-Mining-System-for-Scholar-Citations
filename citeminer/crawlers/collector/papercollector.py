@@ -15,6 +15,7 @@ from citeminer.crawlers.downloader import (
     IEEEDownloader,
     SciHubDownloader,
     SimpleDownloader,
+    WileyDownloader,
 )
 from citeminer.crawlers.scholar import ProxyGenerator, scholarly
 from citeminer.crawlers.scihub import SciHub
@@ -193,6 +194,7 @@ class PaperCollector(object):
                 #                SimpleDownloader(),
                 #                IEEEDownloader(),
                 #                HindawiDownloader(),
+                # WileyDownloader(),
                 SciHubDownloader(),
             ]
         )
