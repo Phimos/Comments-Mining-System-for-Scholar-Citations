@@ -333,7 +333,6 @@ class SciHubDownloader(BaseDownlaoder):
                 ),
                 {"request": title},
             )
-            print(html)
             html.encoding = html.apparent_encoding
             soup = BeautifulSoup(html.text, "lxml")
             real_url = soup.find("iframe").get("src")
