@@ -167,7 +167,7 @@ class AMinerCrawler(BaseCrawler):
     @BaseCrawler.random_sleep(min=2, max=5)
     def search_publication(self, title: str):
         query_url = "https://www.aminer.org/search/pub?q={}".format(title)
-        print(query_url)
+        # print(query_url)
         self.driver.get(query_url)
 
         try:

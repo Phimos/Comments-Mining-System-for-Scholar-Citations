@@ -13,7 +13,7 @@ import os
 import random
 import re
 import time
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import requests
 import urllib3
@@ -316,21 +316,67 @@ class CaptchaNeedException(Exception):
 
 
 class SciHubDownloader(BaseDownlaoder):
-    def __init__(self) -> None:
+    """Downloader for SciHub
+
+
+    Attributes:
+        priority: An integer that can indicate the priority of the downloader.
+                  The smaller the value, the higher the priority.
+        proxies: A dict containing proxies.
+        scihub_urls: A list containing available SciHub.
+    """
+
+    priority = 3
+
+    def __init__(self, proxies: Optional[Union[str, Dict[str, str]]] = None) -> None:
         super().__init__()
+        self.proxies = None
+        if isinstance(proxies, str):
+            self.proxies = {"http": proxies, "https": proxies}
+        else:
+            self.proxies = proxies
+
+        self.scihub_urls = [
+            "https://sci-hub.se/",
+            "https://sci-hub.st/",
+            "https://sci-hub.do/",
+        ]
+
+        try:
+            self.scihub_urls = self._get_available_scihub_urls()
+        except:
+            pass
+
+    def _get_available_scihub_urls(self) -> List[str]:
+        """Finds available scihub urls via https://sci-hub.now.sh/"""
+        urls = []
+        res = requests.get(
+            "https://sci-hub.now.sh/", 
+            proxies=self.proxies)
+        soup = BeautifulSoup(res.text, "lxml")
+        for a in soup.find_all("a", href=True):
+            if "sci-hub." in a["href"]:
+                urls.append(a["href"])
+        return urls
 
     def download(
         self, url: str, path: str, title: str, doi: Optional[str] = None, **kwargs: Any
     ) -> bool:
+        """Download
+
+        Args:
+            url: A string representing the URL link of an online document.
+            path: A string representing the local address where the document is
+                  stored.
+            title: A string representing the title of the paper.
+            doi: A optional string representing the DOI of the paper.
+
+        Returns:
+            A boolean variable indicating whether the download was successful.
+        """
         try:
             html = requests.post(
-                random.choice(
-                    [
-                        "https://sci-hub.se/",
-                        "https://sci-hub.st/",
-                        "https://sci-hub.do/",
-                    ]
-                ),
+                random.choice(self.scihub_urls),
                 {"request": title},
             )
             html.encoding = html.apparent_encoding
@@ -339,11 +385,8 @@ class SciHubDownloader(BaseDownlaoder):
             real_url = re.sub("#view=(.+)", "", real_url)
             if not real_url.startswith("https:"):
                 real_url = "https:" + real_url
-            print(real_url)
         except:
             return False
-
-        time.sleep(random.uniform(5, 20))
 
         return self.simple_download(real_url, path)
 

@@ -7,6 +7,8 @@ from .base import BaseDownlaoder
 
 
 class IEEEDownloader(BaseDownlaoder):
+    priority = 2
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -25,6 +27,8 @@ class IEEEDownloader(BaseDownlaoder):
 
 
 class HindawiDownloader(BaseDownlaoder):
+    priority = 2
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -43,6 +47,8 @@ class WileyDownloader(BaseDownlaoder):
     """
     Can't use
     """
+
+    priority = 2
 
     def __init__(self) -> None:
         super().__init__()

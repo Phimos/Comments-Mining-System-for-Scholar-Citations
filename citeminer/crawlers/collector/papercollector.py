@@ -25,6 +25,8 @@ from citeminer.utils import (
     apply_func,
     convert2txt,
     convert2txt_pdfx,
+    count_pdf_files,
+    count_txt_files,
     download_pdf,
     dump_json,
     fill_aminer_info,
@@ -191,10 +193,10 @@ class PaperCollector(object):
         downloader = AllInOneDownloader(
             [
                 DummyDownloader(),
-                #                SimpleDownloader(),
-                #                IEEEDownloader(),
-                #                HindawiDownloader(),
-                # WileyDownloader(),
+                SimpleDownloader(),
+                IEEEDownloader(),
+                HindawiDownloader(),
+                WileyDownloader(),
                 SciHubDownloader(),
             ]
         )
@@ -222,9 +224,15 @@ class PaperCollector(object):
         )
 
     def from_pdf_to_txt(self) -> None:
-        tasks = generate_tasks(self.metadata_dir, user_guide_info=self.authors)
+        """Convert PDF file into txt file (CPub-level Task)"""
+        tasks = generate_tasks(
+            self.metadata_dir, task_type="cpub", user_guide_info=self.authors
+        )
         apply_func(
-            partial(convert2txt_pdfx, pdf_dir=self.pdf_dir, txt_dir=self.txt_dir), tasks
+            partial(convert2txt, pdf_dir=self.pdf_dir, txt_dir=self.txt_dir),
+            tasks,
+            parallel=True,
+            processes=2,
         )
 
     def create_summaries(self) -> None:

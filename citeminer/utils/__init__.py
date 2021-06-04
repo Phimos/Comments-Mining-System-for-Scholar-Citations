@@ -2,8 +2,10 @@ import json
 import os
 from copy import deepcopy
 from functools import partial
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+from multiprocessing import Pool
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Optional, Sized, Tuple
 
+import filetype
 import pdfx
 import requests
 from citeminer.crawlers.aminer import AMinerCrawler
@@ -14,9 +16,43 @@ from fuzzywuzzy import fuzz, process
 from tqdm import tqdm
 
 
-def apply_func(func: Callable, iterator: Iterable) -> None:
-    for item in tqdm(iterator):
-        func(item)
+def apply_func(
+    func: Callable,
+    iterator: Iterable,
+    parallel: bool = False,
+    processes: int = 4,
+) -> List[Any]:
+    """Apply function on all items in an iterator
+
+    It's simply a warpped map function, provide a progress bar to track real-time
+    progress and estimated completion time and support parallel processing. (Serial
+    mode is used by default)
+
+    Args:
+        func: A callable processing function
+        iterator: An iterable variable (list in citeminer) containing tasks need
+                  to be processed
+        parallel: A boolean indicating whether to use parallel processing
+        processes: An integer used to indicate the number of concurrent processes,
+                   only valid when parallel is True
+
+    Returns:
+        A list containing all return values
+    """
+    result = []
+    if parallel:
+        pool = Pool(processes)
+        result = list(
+            tqdm(
+                pool.imap(func, iterator),
+                total=len(iterator),
+            )
+        )
+        pool.close()
+    else:
+        for item in tqdm(iterator):
+            result.append(func(item))
+    return result
 
 
 # Json Load & Dump
@@ -138,8 +174,17 @@ def makepardirs(file_path: str) -> None:
 
 
 def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
-    """
-    cpub level task
+    """Convert pdf documents to txt format
+
+    (CPub Level Task)
+    Obtain the corresponding paper information from the Task, convert it from
+    the PDF document format to txt, and save it in the txt_dir path.
+
+    Args:
+        task: A tuple containing basic information, (Author, Publication, Citing
+         Publication)
+        pdf_dir: A string representing the storage path of the pdf documents
+        txt_dir: A string representing the storage path of the txt documents
     """
     author, pub, cpub = task
 
@@ -154,6 +199,18 @@ def convert2txt(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
         extract_text(files=[pdf_path], outfile=txt_path)
     except:
         pass
+
+
+def count_txt_files(task: Tuple, pdf_dir: str, txt_dir: str) -> int:
+    author, pub, cpub = task
+    txt_path = get_cpub_path(txt_dir, author, pub, cpub, ".txt")
+    return os.path.exists(txt_path)
+
+
+def count_pdf_files(task: Tuple, pdf_dir: str, txt_dir: str) -> int:
+    author, pub, cpub = task
+    pdf_path = get_cpub_path(pdf_dir, author, pub, cpub, ".pdf")
+    return os.path.exists(pdf_path)
 
 
 def convert2txt_pdfx(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
@@ -171,7 +228,6 @@ def convert2txt_pdfx(task: Tuple, pdf_dir: str, txt_dir: str) -> None:
         out = pdf.get_text()
         with open(txt_path, "w") as f:
             f.write(out)
-        print(txt_path)
 
     except:
         pass
@@ -335,16 +391,14 @@ def download_pdf(
     if downloader.download(
         url=info.get("eprint_url", ""), path=pdf_path, title=info["bib"]["title"]
     ):
-        print("[success]", info["bib"]["title"], info.get("eprint_url", ""))
+        # print("[success]", info["bib"]["title"], info.get("eprint_url", ""))
+        pass
 
     else:
         #        print("[failed]", info["bib"]["title"], info.get("eprint_url", ""))
         pass
 
 
-def valid_pdf():
-    pdfx.PDFx().is_pdf
-    import filetype
-
-    def is_pdf(path_to_file):
-        return filetype.guess(path_to_file).mime == "application/pdf"
+def valid_pdf(path: str) -> bool:
+    result = filetype.guess(path)
+    return result is not None and result.mime == "application/pdf"

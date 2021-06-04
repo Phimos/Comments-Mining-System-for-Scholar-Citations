@@ -10,9 +10,9 @@ do
     else
         echo $pid
         kill -9 $pid
-        sleep 6m
+        sleep 5m
     fi
     cd /home/ganyunchong/Comments-Mining-System-for-Scholar-Citations
     python pipeline.py &
-    sleep 4m
+    sleep 2m
 done

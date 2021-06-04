@@ -6,6 +6,8 @@ from .base import BaseDownlaoder
 
 
 class SimpleDownloader(BaseDownlaoder):
+    priority = 1
+
     def __init__(self) -> None:
         super().__init__()
 

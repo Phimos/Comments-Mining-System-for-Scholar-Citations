@@ -1,6 +1,6 @@
 # Comments-Mining-System-for-Scholar-Citations
 
-Yunchong Gan's graduation project for undergraduates
+Graduation project for undergraduates
 
 ## Installation
 
@@ -14,6 +14,8 @@ install citeminer with pip.
 pip install -e .
 ```
 
+**P.S.** Luminati is needed to crawl Google Scholar and other scholar webcites. https://luminati-china.biz/
+
 ## Usage
 
 Use json config to determine the author / publication needed to be mined.
@@ -23,6 +25,12 @@ Change the config path in `pipeline.py`, and you can only run specific step if y
 ```
 python pipeline.py
 ```
+
+**P.S.** Sci-Hub will block the crawlers after about 10 times try. `download.sh` will retry every 5 minutes.
+
+## TODO
+
+Search `TODO` in code files, and you will find the TODO list. Some of them may be fixed soon.
 
 
 ## Useful Information
